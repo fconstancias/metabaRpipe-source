@@ -2657,7 +2657,7 @@ run_dada2_pipe <- function(raw_files_path,
                            merged_run_dir = "dada2/03_dada2_merged_runs_chimera_removed",
                            taxa_dir = "dada2/04_dada2_taxonomy",
                            sep = "[^_]+",
-                           V = "V4",
+                           V = "V4-2PCR",
                            rm_primers = TRUE,
                            PRIMER_F,
                            PRIMER_R,
@@ -2685,7 +2685,7 @@ run_dada2_pipe <- function(raw_files_path,
                            SLOTS = 6,
                            seed_value = 123,
                            return = FALSE){
-  if(V == "V4") {
+  if(V == "V4-2PCR") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
@@ -2694,6 +2694,17 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 120
     minover = 40
+  } 
+  if(V == "V4-1PCR") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    rm_primers = FALSE
   } 
   if(V == "V4-NIH") {
     
