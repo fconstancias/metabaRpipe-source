@@ -2716,7 +2716,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 120
     minover = 25
-    nbases = 100000000
+    nbases = 1000000000
     rm_primers = FALSE
     collapseNoMis = TRUE
     
