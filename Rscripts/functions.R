@@ -411,7 +411,7 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  maxLen = Inf,
                                                  nbases = 20000000,
                                                  pool = "pseudo",
-                                                 priors = FALSE,
+                                                 priors = "FALSE",
                                                  minover = 12,
                                                  cut_dir = "dada2/00_atropos_primer_removed",
                                                  filt_dir = "dada2/02_dada2_filtered_denoised_merged",
@@ -580,11 +580,11 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     
     if(identical(names(derepFs), names(derepRs)) != TRUE ) stop("Samples names are not consistent between Forward and Reverse dereplicated samples")
     
-    if(!isFALSE(priors)){
+    if(priors != "FALSE"){
       priors %>% 
       Biostrings::readDNAStringSet() %>%  data.frame() %>%  pull(".") -> priors_seq}
     
-    if(isFALSE(priors)){
+    if(priors == "FALSE"){
       priors_seq = character(0)}
       
     dadaFs <- dada(derepFs, 
