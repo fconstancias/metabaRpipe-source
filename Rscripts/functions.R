@@ -580,19 +580,24 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     
     if(identical(names(derepFs), names(derepRs)) != TRUE ) stop("Samples names are not consistent between Forward and Reverse dereplicated samples")
     
+    if(!isFALSE(priors)){
+      priors %>% 
+      Biostrings::readDNAStringSet() %>%  data.frame() %>%  pull(".") -> priors}
+    
+    if(isFALSE(priors)){
+      priors = character(0)}
+      
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
                    pool=ifelse(pool == "FALSE", as.logical(pool), pool),
-                   priors = ifelse(isFALSE(priors), character(0), 
-                                   Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
+                   priors = priors)
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
                    pool=ifelse(pool == "FALSE", as.logical(pool), pool),
-                   priors = ifelse(isFALSE(priors), character(0), 
-                                   Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
+                   priors = priors)
     
     
     cat('\n# DADA2 algorithm performed \n')
