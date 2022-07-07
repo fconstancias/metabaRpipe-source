@@ -2737,6 +2737,19 @@ run_dada2_pipe <- function(raw_files_path,
     collapseNoMis = TRUE
     
   } 
+  if(V == "test") {
+    
+    PRIMER_F = "GTGYCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACNVGGGTWTCTAAT" 
+    rm_primers = FALSE
+    trim_length = c(200,280)
+    truncQ = Inf
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    nbases = 10
+  } 
   if(V == "V4-Addition-PRO") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
