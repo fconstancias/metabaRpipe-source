@@ -944,9 +944,13 @@ run_dada2_mergeRuns_removeBimeraDenovo <- function(seqtab = NULL,
                      str_c(merged_run_dir,"/minOverlap_",minOverlap,"_collapse_no_mismatch_no-chim-seqtab.fasta"),
                      ids= str_c("asv",c(1:ncol(collapsed_100)), ";size=", colSums(collapsed_100)))
     }
+    
     track %>% 
-      mutate(collapsed_100 = rowSums(collapsed_100)) %>%
+      left_join(data.frame(sample = rownames(collapsed_100),
+                               collapsed_100 = rowSums(collapsed_100)),
+                    by='sample') %>% 
       mutate(collapsed_100_pc = round(collapsed_100 / length_filtered, digits = 10)) -> track.final
+    
     
     if (export == TRUE){
       
@@ -1461,8 +1465,8 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     names(sequences) <- taxa_names(physeq)  # this propagates to the tip labels of the tree
     
     alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(sequences),
-                           anchor = NA,
-                           processors = nthreads)
+                                     anchor = NA,
+                                     processors = nthreads)
     
     phang_align <- phangorn::phyDat(as(alignment, 'matrix'), type='DNA')
     
@@ -1476,8 +1480,8 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     fitGTR <- update(fit, k = 4, inv = 0.2)
     
     fitGTR <- phangorn::optim.pml(fitGTR, model = 'GTR', optInv = TRUE, optGamma = TRUE,
-                        rearrangement = 'stochastic',
-                        control = pml.control(trace = 0))
+                                  rearrangement = 'stochastic',
+                                  control = pml.control(trace = 0))
     
     detach('package:phangorn', unload = TRUE)
     detach('package:DECIPHER', unload = TRUE)
@@ -2798,7 +2802,7 @@ run_dada2_pipe <- function(raw_files_path,
     cut_dir = raw_files_path
     cut_file_pattern = raw_file_pattern
   }
-
+  
   
   cat(paste0('\n##',"running run_dada2_qplot() '\n\n'"))
   
