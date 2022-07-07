@@ -2710,13 +2710,16 @@ run_dada2_pipe <- function(raw_files_path,
     
     PRIMER_F = "GTGYCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACNVGGGTWTCTAAT" 
-    trim_length = c(210,280)
+    trim_length = c(200,280)
     truncQ = Inf
     trunclen =  c(170,150)
     maxee = c(3,4)
     minLen = 120
     minover = 25
     nbases = 100000000
+    rm_primers = FALSE
+    collapseNoMis = TRUE
+    
   } 
   if(V == "V4-Addition-PRO") {
     
