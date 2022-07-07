@@ -584,14 +584,14 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
                    err=errF, 
                    multithread= nthreads, 
                    pool=ifelse(pool == "FALSE", as.logical(pool), pool),
-                   priors = ifelse(priors == FALSE, character(0), 
+                   priors = ifelse(isFALSE(priors), character(0), 
                                    Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
                    pool=ifelse(pool == "FALSE", as.logical(pool), pool),
-                   priors = ifelse(priors == FALSE, character(0), 
+                   priors = ifelse(isFALSE(priors), character(0), 
                                    Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
     
     
