@@ -2717,6 +2717,7 @@ run_dada2_pipe <- function(raw_files_path,
     trim_length = c(200,280)
     truncQ = Inf
     trunclen =  c(170,160)
+    pool = TRUE
     maxee = c(3,4)
     minLen = 120
     minover = 40
