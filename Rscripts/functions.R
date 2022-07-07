@@ -411,6 +411,7 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  maxLen = Inf,
                                                  nbases = 20000000,
                                                  pool = "pseudo",
+                                                 priors = FALSE,
                                                  minover = 12,
                                                  cut_dir = "dada2/00_atropos_primer_removed",
                                                  filt_dir = "dada2/02_dada2_filtered_denoised_merged",
@@ -582,12 +583,17 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool))
+                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   priors = ifelse(priors = FALSE, character(0), 
+                                   Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool))
+                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   priors = ifelse(priors = FALSE, character(0), 
+                                   Biostrings::readDNAStringSet(priors) %>%  data.frame() %>%  select(".")))
+    
     
     cat('\n# DADA2 algorithm performed \n')
     
@@ -947,8 +953,8 @@ run_dada2_mergeRuns_removeBimeraDenovo <- function(seqtab = NULL,
     
     track %>% 
       left_join(data.frame(sample = rownames(collapsed_100),
-                               collapsed_100 = rowSums(collapsed_100)),
-                    by='sample') %>% 
+                           collapsed_100 = rowSums(collapsed_100)),
+                by='sample') %>% 
       mutate(collapsed_100_pc = round(collapsed_100 / length_filtered, digits = 10)) -> track.final
     
     
@@ -2668,6 +2674,7 @@ run_dada2_pipe <- function(raw_files_path,
                            tax_threshold = 60,
                            nbases = 20000000,
                            pool = "pseudo",
+                           priors = FALSE,
                            trim_length = c(240,400),
                            trunclen = c(260,250),
                            truncQ = 6,
@@ -2830,6 +2837,7 @@ run_dada2_pipe <- function(raw_files_path,
                                        maxLen = Inf,
                                        nbases = nbases, 
                                        minover = minover,
+                                       priors = priors,
                                        pool = pool,
                                        nthreads = ifelse(SLOTS > 6, 6, SLOTS),
                                        remove_input_fastq = remove_input_fastq,
