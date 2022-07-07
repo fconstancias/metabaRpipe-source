@@ -2720,9 +2720,9 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 120
     minover = 20
-    nbases = 10000000000
+    nbases = 10 #10000000000
     rm_primers = FALSE
-    collapseNoMis = FALSE
+    collapseNoMis = TRUE
     
   } 
   if(V == "V4-Addition-PRO") {
