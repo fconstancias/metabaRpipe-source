@@ -3197,7 +3197,7 @@ FM_2phyloseq <- function(input_table = NULL,
 #' @author Florentin Constancias
 #' @note You might want to perform taxonomic classification on the combined object to make sure of constistenct (database, approach, confidence trehshold)
 #' @note Since combining phylogenetic tree is not trivial, user will have to run the `add_phylogeny_to_phyloseq()` script on the merged object
-#' @note .
+#' @note Metadata will not be combine, please use `physeq_add_metadata()` 
 #' @return return a merged_ps `phyloseq` object as well as the output from `phyloseq_DECIPHER_cluster_ASV()` if clust_ASV_seq is set to TRUE (default)
 #' @export
 #' @examples
