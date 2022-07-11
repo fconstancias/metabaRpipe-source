@@ -2074,8 +2074,8 @@ compare_phyloseq_taxonomy <- function(physeq_A,
 phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") %>% subset_taxa(taxa_sums(physeq) > 1000) -> physeq
                                           threshold = 97,
                                           nthreads = 6,
-                                          method = "complete",
-                                          showPlot = FALSE,
+                                          # method = "complete",
+                                          # showPlot = FALSE,
                                           export = FALSE,
                                           return = TRUE,
                                           full_return = TRUE){
@@ -2117,21 +2117,22 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
   ## ------------------------------------------------------------------------
   dna <- refseq(physeq)
   
-  aln <- DECIPHER::AlignSeqs(dna, 
-                             processors = nthreads)
-  
-  d <- DECIPHER::DistanceMatrix(aln, 
-                                processors = nthreads)
+  # aln <- DECIPHER::AlignSeqs(dna, 
+  #                            processors = nthreads)
+  # 
+  # d <- DECIPHER::DistanceMatrix(aln, 
+  #                               processors = nthreads)
   
   ## ------------------------------------------------------------------------
   
   clusters <- DECIPHER::IdClusters(
-    d, 
-    showPlot = showPlot,
-    method = method,
+    # d, 
+    dna,
+    # showPlot = showPlot,
+    # method = method,
     cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
     processors = nthreads,
-    verbose = TRUE)
+    verbose = FALSE)
   
   ## ------------------------------------------------------------------------
   
@@ -3189,3 +3190,127 @@ FM_2phyloseq <- function(input_table = NULL,
   
 }
 
+
+#' @title Join two phyloseq objects by ASV/OTU sequence refseq()
+#' @param clust_ASV_seq = perform similarity sequencing default TRUE
+#' @param ..
+#' @author Florentin Constancias
+#' @note You might want to perform taxonomic classification on the combined object to make sure of constistenct (database, approach, confidence trehshold)
+#' @note Since combining phylogenetic tree is not trivial, user will have to run the `add_phylogeny_to_phyloseq()` script on the merged object
+#' @note .
+#' @return return a merged_ps `phyloseq` object as well as the output from `phyloseq_DECIPHER_cluster_ASV()` if clust_ASV_seq is set to TRUE (default)
+#' @export
+#' @examples
+#' 
+
+phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 6){
+  
+  ## ------------------------------------------------------------------------
+  require(phyloseq); require(tidyverse)
+  # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
+  ## ------------------------------------------------------------------------
+  # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>% 
+  # readRDS() -> ps1
+  
+  # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>% 
+  # readRDS() -> ps2
+  ## ------------------------------------------------------------------------
+  
+  ps1 %>% 
+    phloseq_export_otu_tax() -> ps1_df
+  
+  ps2 %>% 
+    phloseq_export_otu_tax() -> ps2_df
+  
+  ## ------------------------------------------------------------------------
+  
+  
+  full_join(ps1_df,
+            ps2_df,
+            by = c("ASV_sequence" = "ASV_sequence")) -> merged_df_ps
+  
+  ## ------------------------------------------------------------------------
+  
+  
+  
+  merged_df_ps %>% 
+    select(all_of(c("ASV_sequence", 
+                    sample_names(ps1), 
+                    sample_names(ps2)))) %>% 
+    replace(is.na(.), 0) -> otu_merged
+  
+  merged_df_ps %>% 
+    # na_if("NA") %>% 
+    # na_if("<NA>") %>% 
+    # na_if(NA) %>% 
+    select("ASV_sequence", 
+           starts_with("Kingdom"), 
+           starts_with("Phylum"),
+           starts_with("Class"),
+           starts_with("Order"),
+           starts_with("Family"),
+           starts_with("Genus"),
+           starts_with("Species")) %>% 
+    mutate(Kingdom_merged = ifelse(is.na(Kingdom.x), Kingdom.y , Kingdom.x),
+           phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
+           Class_merged= ifelse(is.na(Class.x), Class.y , Class.x),
+           Order_merged = ifelse(is.na(Order.x), Order.y , Order.x),
+           Family_merged = ifelse(is.na(Family.x), Family.y , Family.x),
+           Genus_merged = ifelse(is.na(Genus.x), Genus.y , Genus.x),
+           Species_merged = ifelse(is.na(Species.x), Species.y , Species.x)) %>% 
+    select(ASV_sequence, Kingdom_merged:Species_merged) -> tax_merged
+  
+  ## ------------------------------------------------------------------------
+  
+  otu_merged %>% 
+    left_join(tax_merged,
+              by = c("ASV_sequence" = "ASV_sequence")) %>% 
+    mutate(Total = rowSums(select_if(., is.numeric), na.rm = TRUE)) %>% 
+    arrange(-Total) %>% 
+    select(-Total) %>% 
+    column_to_rownames('ASV_sequence') -> full_merged
+  
+  ## ------------------------------------------------------------------------
+  
+  merge_phyloseq(full_merged %>%  
+                   select_if(is.double) %>% 
+                   as.matrix() %>% 
+                   otu_table(taxa_are_rows = TRUE),
+                 full_merged %>%  
+                   select_if(is.character) %>% 
+                   as.matrix() %>% 
+                   tax_table()) -> full_merged_ps
+  
+  ## ------------------------------------------------------------------------
+  
+  ASV_seq <- Biostrings::DNAStringSet(taxa_names(full_merged_ps))
+  names(ASV_seq) <- taxa_names(full_merged_ps)
+  # 
+  out <- merge_phyloseq(full_merged_ps,
+                        ASV_seq)
+  
+  taxa_names(out) <- paste0("ASV", str_pad(seq(ntaxa(full_merged_ps)),
+                                           nchar(ntaxa(full_merged_ps)),
+                                           pad = "0"))
+  
+  ## ------------------------------------------------------------------------
+  if (isTRUE(clust_ASV_seq))
+  {
+    # require(DECIPHER)
+    ## ------------------------------------------------------------------------
+    
+    out %>% 
+      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
+    
+    ## ------------------------------------------------------------------------
+    
+    print(paste0("Number of sequences clustered = ",full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa()))
+    
+    ## ------------------------------------------------------------------------
+    
+    out <- list("cluster_output" = cluster_out,
+                "merged_ps" = full_merged_ps)
+  }
+  ## ------------------------------------------------------------------------
+  return(out)
+}
