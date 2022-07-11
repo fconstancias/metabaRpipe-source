@@ -3192,10 +3192,10 @@ FM_2phyloseq <- function(input_table = NULL,
 
 
 #' @title Join two phyloseq objects by ASV/OTU sequence refseq()
-#' @param clust_ASV_seq = perform similarity sequencing default TRUE
+#' @param clust_ASV_seq = perform similarity clustering of ASV/OTU sequences (default)
 #' @param ..
 #' @author Florentin Constancias
-#' @note You might want to perform taxonomic classification on the combined object to make sure of constistenct (database, approach, confidence trehshold)
+#' @note You might want to perform taxonomic classification on the combined object to make sure of consistent (database, approach, confidence threshold)
 #' @note Since combining phylogenetic tree is not trivial, user will have to run the `add_phylogeny_to_phyloseq()` script on the merged object
 #' @note Metadata will not be combine, please use `physeq_add_metadata()` 
 #' @return return a merged_ps `phyloseq` object as well as the output from `phyloseq_DECIPHER_cluster_ASV()` if clust_ASV_seq is set to TRUE (default)
