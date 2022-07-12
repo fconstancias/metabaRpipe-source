@@ -582,11 +582,11 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     
     if(priors != "FALSE"){
       priors %>% 
-      Biostrings::readDNAStringSet() %>%  data.frame() %>%  pull(".") -> priors_seq}
+        Biostrings::readDNAStringSet() %>%  data.frame() %>%  pull(".") -> priors_seq}
     
     if(priors == "FALSE"){
       priors_seq = character(0)}
-      
+    
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
@@ -3197,21 +3197,22 @@ FM_2phyloseq <- function(input_table = NULL,
 #' @author Florentin Constancias
 #' @note You might want to perform taxonomic classification on the combined object to make sure of consistent (database, approach, confidence threshold)
 #' @note Since combining phylogenetic tree is not trivial, user will have to run the `add_phylogeny_to_phyloseq()` script on the merged object
+#' @note if merge_metada = TRUE, only shared columns of the two phyloseq objects will be used and combined into the phyloseq object. You can use `physeq_add_metadata()` 
 #' @note Metadata will not be combine, please use `physeq_add_metadata()` 
 #' @return return a merged_ps `phyloseq` object as well as the output from `phyloseq_DECIPHER_cluster_ASV()` if clust_ASV_seq is set to TRUE (default)
 #' @export
 #' @examples
 #' 
 
-phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 6){
+phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
   
   ## ------------------------------------------------------------------------
   require(phyloseq); require(tidyverse)
   # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
-  ## ------------------------------------------------------------------------
+  # ## ------------------------------------------------------------------------
   # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>%
   # readRDS() -> ps1
-  # 
+  # # 
   # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>%
   # readRDS() -> ps2
   ## ------------------------------------------------------------------------
@@ -3222,6 +3223,29 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   ps2 %>% 
     phloseq_export_otu_tax() -> ps2_df
   
+  ## ------------------------------------------------------------------------
+  if (isTRUE(merge_metada))
+  {
+  ps1 %>% 
+    sample_data() %>% 
+    data.frame() %>% 
+    rownames_to_column('id_tmp') -> ps1_meta
+  
+  ps2 %>% 
+    sample_data() %>% 
+    data.frame()  %>% 
+    rownames_to_column('id_tmp') -> ps2_meta
+  
+  ps1_meta %>% 
+    colnames() %>% 
+    intersect(ps2_meta %>% colnames()) -> commun_cols
+  
+  ps1_meta %>% 
+    select(commun_cols) %>% 
+    rbind(ps2_meta %>% 
+            select(all_of(commun_cols))) %>% 
+    column_to_rownames('id_tmp')-> common_col_bind
+  }
   ## ------------------------------------------------------------------------
   
   full_join(ps1_df,
@@ -3295,6 +3319,12 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   
   colnames(tax_table(out))  <- stringr::str_replace_all(phyloseq::rank_names(out), "_merged", "")
   
+  if (isTRUE(merge_metada))
+  {
+    out <- merge_phyloseq(out,
+                          common_col_bind %>%  sample_data()
+    )
+  }
   ## ------------------------------------------------------------------------
   
   if (isTRUE(clust_ASV_seq))
@@ -3322,12 +3352,12 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   ## ------------------------------------------------------------------------
   # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
   # 
-  # out %>% 
+  # out %>%
   # physeq_add_metadata(physeq = .,
   #                     metadata = "~/Desktop/test_metadata.tsv" %>%
   #                      read_tsv(),
   #                     sample_column = "sample_name") -> physeq
-  #   # 
+  #   #
   # physeq %>%
   #   transform_sample_counts(function(x) x/sum(x) * 1000) %>% # transform as percentage before filtering
   #   # prune_taxa(rm_rare_asv, .) %>% # keep only the ASV with id matching the rm_rare_asv vector from the phyloseq object
@@ -3338,5 +3368,6 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   #                           ntax =  10)  -> heat_rm_rare_asv
   # 
   # heat_rm_rare_asv
-  # 
-  }
+  
+}
+
