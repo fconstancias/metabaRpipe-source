@@ -3209,10 +3209,10 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   require(phyloseq); require(tidyverse)
   # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
   ## ------------------------------------------------------------------------
-  # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>% 
+  # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>%
   # readRDS() -> ps1
-  
-  # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>% 
+  # 
+  # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>%
   # readRDS() -> ps2
   ## ------------------------------------------------------------------------
   
@@ -3224,20 +3224,18 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   
   ## ------------------------------------------------------------------------
   
-  
   full_join(ps1_df,
             ps2_df,
             by = c("ASV_sequence" = "ASV_sequence")) -> merged_df_ps
   
   ## ------------------------------------------------------------------------
   
-  
-  
   merged_df_ps %>% 
     select(all_of(c("ASV_sequence", 
                     sample_names(ps1), 
                     sample_names(ps2)))) %>% 
-    replace(is.na(.), 0) -> otu_merged
+    replace(is.na(.), 0) %>% 
+    replace(is.character(.), 0)-> otu_merged
   
   merged_df_ps %>% 
     # na_if("NA") %>% 
@@ -3274,6 +3272,7 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   
   merge_phyloseq(full_merged %>%  
                    select_if(is.double) %>% 
+                   replace(is.na(.), 0) %>% 
                    as.matrix() %>% 
                    otu_table(taxa_are_rows = TRUE),
                  full_merged %>%  
@@ -3292,8 +3291,12 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
   taxa_names(out) <- paste0("ASV", str_pad(seq(ntaxa(full_merged_ps)),
                                            nchar(ntaxa(full_merged_ps)),
                                            pad = "0"))
+  # phyloseq::rank_names(out) <- 
+  
+  colnames(tax_table(out))  <- stringr::str_replace_all(phyloseq::rank_names(out), "_merged", "")
   
   ## ------------------------------------------------------------------------
+  
   if (isTRUE(clust_ASV_seq))
   {
     # require(DECIPHER)
@@ -3311,6 +3314,29 @@ phyloseq_combine_objects <- function(ps1, ps2, clust_ASV_seq = TRUE, nthreads = 
     out <- list("cluster_output" = cluster_out,
                 "merged_ps" = full_merged_ps)
   }
+  
   ## ------------------------------------------------------------------------
+  
   return(out)
-}
+  
+  ## ------------------------------------------------------------------------
+  # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
+  # 
+  # out %>% 
+  # physeq_add_metadata(physeq = .,
+  #                     metadata = "~/Desktop/test_metadata.tsv" %>%
+  #                      read_tsv(),
+  #                     sample_column = "sample_name") -> physeq
+  #   # 
+  # physeq %>%
+  #   transform_sample_counts(function(x) x/sum(x) * 1000) %>% # transform as percentage before filtering
+  #   # prune_taxa(rm_rare_asv, .) %>% # keep only the ASV with id matching the rm_rare_asv vector from the phyloseq object
+  #   phyloseq_ampvis_heatmap(physeq = .,
+  #                           transform = FALSE, # extract only the taxa to display - after percentage normalisation
+  #                           facet_by = "group",
+  #                           group_by = "sample_name",
+  #                           ntax =  10)  -> heat_rm_rare_asv
+  # 
+  # heat_rm_rare_asv
+  # 
+  }
