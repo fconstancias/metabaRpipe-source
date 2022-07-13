@@ -3340,9 +3340,12 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
     print(paste0("Number of sequences clustered = ",full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa()))
     
     ## ------------------------------------------------------------------------
-    
-    out <- list("cluster_output" = cluster_out,
-                "merged_ps" = full_merged_ps)
+    if(full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa() > 0){
+      
+      out <- list("cluster_output" = cluster_out,
+                  "merged_ps" = full_merged_ps)
+    }
+
   }
   
   ## ------------------------------------------------------------------------
@@ -3350,6 +3353,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
   return(out)
   
   ## ------------------------------------------------------------------------
+  
   # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
   # 
   # out %>%
