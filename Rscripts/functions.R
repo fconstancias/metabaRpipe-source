@@ -2711,6 +2711,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 120
     minover = 40
+    nbases = 100000000000
   } 
   if(V == "V4-1PCR") {
     
@@ -2721,6 +2722,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 120
     minover = 40
+    nbases = 100000000000
     rm_primers = FALSE
   } 
   if(V == "V4-NIH") {
