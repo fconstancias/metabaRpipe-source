@@ -3276,7 +3276,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
            starts_with("Genus"),
            starts_with("Species")) %>% 
     mutate(Kingdom_merged = ifelse(is.na(Kingdom.x), Kingdom.y , Kingdom.x),
-           phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
+           Phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
            Class_merged= ifelse(is.na(Class.x), Class.y , Class.x),
            Order_merged = ifelse(is.na(Order.x), Order.y , Order.x),
            Family_merged = ifelse(is.na(Family.x), Family.y , Family.x),
