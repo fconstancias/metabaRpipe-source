@@ -1453,7 +1453,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
 add_phylogeny_to_phyloseq <- function(phyloseq_path,
                                       method = "R",
                                       nthreads = 6,
-                                      export = "05_phylogeny",
+                                      export = FALSE,
                                       output_phyloseq = "phyloseq_phylo.RDS"){
   
   ## ------------------------------------------------------------------------
