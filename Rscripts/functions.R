@@ -2706,7 +2706,7 @@ run_dada2_pipe <- function(raw_files_path,
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
-    trim_length = c(180,280)
+    trim_length = c(200,280)
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
@@ -2717,7 +2717,7 @@ run_dada2_pipe <- function(raw_files_path,
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
-    trim_length = c(180,280)
+    trim_length = c(200,280)
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
