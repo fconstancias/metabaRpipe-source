@@ -241,7 +241,7 @@ run_atropos <- function(raw_files_path,
         system2(atropos, args = c("trim", "--pair-filter any",
                                   "--no-indels", "--discard-untrimmed", "--max-n 0", " -j ", NSLOTS,
                                   paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
-                                  "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
+                                  # "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
                                   "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
                                   fnFs[i],  fnRs[i],
                                   "--minimum-length ", MIN_L)) # input files
