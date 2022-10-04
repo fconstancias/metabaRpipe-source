@@ -223,7 +223,6 @@ run_atropos <- function(raw_files_path,
     if(atropos == "atropos")
     {
       
-
     for(i in seq_along(fnFs)) {
       system2(atropos, args = c("trim", "--pair-filter any",
                                 "--no-indels", "--discard-untrimmed", "--max-n 0", " -T ", NSLOTS,
@@ -235,10 +234,8 @@ run_atropos <- function(raw_files_path,
     }
     }
     
-    
     if(atropos == "cutadapt")
     {
-      
       
       for(i in seq_along(fnFs)) {
         system2(atropos, args = c("trim", "--pair-filter any",
