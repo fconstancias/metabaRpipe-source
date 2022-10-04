@@ -222,11 +222,11 @@ run_atropos <- function(raw_files_path,
     ## run atropos
     for(i in seq_along(fnFs)) {
       system2(atropos, args = c("trim", "--pair-filter any",
-                                "--no-indels", "--discard-untrimmed", "--max-n 0", " -T ", NSLOTS,
+                                "--no-indels", "--discard-untrimmed", "--max-n 0", ifelse(atropos == "cutadapt", " ", paste0("-T ", NSLOTS)),
                                 paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
                                 "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
                                 "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
-                                "-pe1", fnFs[i], "-pe2", fnRs[i],
+                                felse(atropos != "cutadapt", paste0("-pe1"), " "), fnFs[i], felse(atropos != "cutadapt", paste0("-pe2"), " "), fnRs[i],
                                 "--minimum-length ", MIN_L)) # input files
     }
   }
