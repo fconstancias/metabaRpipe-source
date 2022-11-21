@@ -1365,7 +1365,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
                                export = "dada2/phyloseq.RDS")
 {
   ## ------------------------------------------------------------------------
-  require(tidyverse); require(dada2); require(phyloseq)
+  require(tidyverse); require(dada2); require(phyloseq); library(iCAMP)
   cat(paste0('\n##',"You are using DADA2 version ", packageVersion('dada2'),'\n'))
   cat(paste0('\n##',"You are using tidyverse version ", packageVersion('tidyverse'),'\n\n'))
   cat(paste0('\n##',"You are using phyloseq version ", packageVersion('phyloseq'),'\n\n'))
