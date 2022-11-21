@@ -1414,7 +1414,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
   ## ------------------------------------------------------------------------
   ## add ASV as refseq part of the phyloseq object
   
-  physeq@refseq = Biostrings::DNAStringSet(taxa_names(physeq)) # https://github.com/benjjneb/dada2/issues/613
+  physeq@refseq = tidyverse::DNAStringSet(taxa_names(physeq)) # https://github.com/benjjneb/dada2/issues/613
   
   ## ------------------------------------------------------------------------
   
