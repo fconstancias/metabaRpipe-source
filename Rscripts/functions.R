@@ -1365,7 +1365,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
                                export = "dada2/phyloseq.RDS")
 {
   ## ------------------------------------------------------------------------
-  require(tidyverse); require(dada2); require(phyloseq); library(iCAMP)
+  require(tidyverse); require(dada2); require(phyloseq)
   cat(paste0('\n##',"You are using DADA2 version ", packageVersion('dada2'),'\n'))
   cat(paste0('\n##',"You are using tidyverse version ", packageVersion('tidyverse'),'\n\n'))
   cat(paste0('\n##',"You are using phyloseq version ", packageVersion('phyloseq'),'\n\n'))
@@ -1414,7 +1414,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
   ## ------------------------------------------------------------------------
   ## add ASV as refseq part of the phyloseq object
   
-  physeq@refseq = tidyverse::DNAStringSet(taxa_names(physeq)) # https://github.com/benjjneb/dada2/issues/613
+  physeq@refseq = Biostrings::DNAStringSet(taxa_names(physeq)) # https://github.com/benjjneb/dada2/issues/613
   
   ## ------------------------------------------------------------------------
   
