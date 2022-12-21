@@ -325,7 +325,7 @@ run_dada2_qplot <- function(prop.sample = 20,
     
     fnFs <- fnFs_cut[exists]
     fnRs <- fnRs_cut[exists]
-    
+  
     # readFastq(fnRs) %>% #idea to filter based on length
     #   ShortRead::sread()
     
@@ -334,6 +334,7 @@ run_dada2_qplot <- function(prop.sample = 20,
     sample.names <- basename(fnFs) %>%
       str_extract(paste0(sep))
     
+
     cat(paste0('\n# sample names list starts with : \n'))
     cat(sample.names)
     
@@ -2093,7 +2094,7 @@ compare_phyloseq_taxonomy <- function(physeq_A,
 phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") %>% subset_taxa(taxa_sums(physeq) > 1000) -> physeq
                                           threshold = 97,
                                           nthreads = 6,
-                                          # method = "complete",
+                                          method = "overlap",
                                           # showPlot = FALSE,
                                           export = FALSE,
                                           return = TRUE,
@@ -2144,14 +2145,21 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
   
   ## ------------------------------------------------------------------------
   
-  clusters <- DECIPHER::IdClusters(
-    # d, 
-    dna,
-    # showPlot = showPlot,
-    # method = method,
-    cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
-    processors = nthreads,
-    verbose = FALSE)
+  # clusters <- DECIPHER::IdClusters(
+  #   # d, 
+  #   dna,
+  #   # showPlot = showPlot,
+  #   # method = method,
+  #   cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
+  #   processors = nthreads,
+  #   verbose = FALSE)
+  
+  clusters <- DECIPHER::Clusterize(myXStringSet = dna, 
+                                   cutoff = (100-threshold) / 100,
+                                   method = method,
+                                   processors = nthreads,
+                                   verbose = FALSE)
+                                    
   
   ## ------------------------------------------------------------------------
   
