@@ -2219,10 +2219,6 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
 #' @export
 #' @examples
 #'
-#'
-#'
-#'
-#'
 #'"https://raw.githubusercontent.com/tobiasgf/lulu/master/Example_data/centroids_test.txt" %>% 
 #'  Biostrings::readDNAStringSet(filepath = .) -> fa
 #'
