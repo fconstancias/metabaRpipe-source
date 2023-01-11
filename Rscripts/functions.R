@@ -2221,9 +2221,19 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
 #'
 #'
 #'
-#'phyloseq_vsearch_lulu_cluster_ASV(readRDS("data/processed/physeq_update_11_1_21.RDS"),
-#'                               vsearch = "/Users/fconstan/miniconda3/envs/metabarcodingRpipeline/bin/vsearch",
-#'                                 dir = ("~/"), int_rm = TRUE) -> out
+#'
+#'
+#'"https://raw.githubusercontent.com/tobiasgf/lulu/master/Example_data/centroids_test.txt" %>% 
+#'  Biostrings::readDNAStringSet(filepath = .) -> fa
+#'
+#'"https://raw.githubusercontent.com/tobiasgf/lulu/master/Example_data/otutable_test.txt" %>% 
+#'  read_tsv(.) %>% 
+#'  column_to_rownames("...1") -> otu
+#'
+#'phyloseq(otu_table(otu, taxa_are_rows = TRUE), refseq(fa)) -> physeq
+#'
+#' phyloseq_vsearch_lulu_cluster_ASV(physeq = physeq, vsearch = "/Users/fconstan/miniconda3/pkgs/vsearch-2.7.0-1/bin/vsearch", dir = ("~/"), int_rm = TRUE) -> out
+#' physeq; out$physeq_curated
 
 phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") -> physeq
                                               vsearch = "vsearch",
