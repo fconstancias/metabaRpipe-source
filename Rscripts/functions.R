@@ -610,13 +610,13 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     
