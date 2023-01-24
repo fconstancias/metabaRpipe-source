@@ -2810,6 +2810,7 @@ run_dada2_pipe <- function(raw_files_path,
     nbases = 100000000000
     pool = TRUE
     collapseNoMis = TRUE
+    tax_threshold = 80
   } 
   if(V == "V4-1PCR") {
     
@@ -2836,6 +2837,8 @@ run_dada2_pipe <- function(raw_files_path,
     rm_primers = FALSE
     pool = TRUE
     collapseNoMis = TRUE
+    tax_threshold = 80
+    
   } 
   if(V == "V4-NIH") {
     
