@@ -2798,6 +2798,19 @@ run_dada2_pipe <- function(raw_files_path,
     minover = 40
     nbases = 100000000000
   } 
+  if(V == "V4-2PCR-up") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    nbases = 100000000000
+    pool = TRUE
+    collapseNoMis = TRUE
+  } 
   if(V == "V4-1PCR") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
@@ -2809,6 +2822,20 @@ run_dada2_pipe <- function(raw_files_path,
     minover = 40
     nbases = 100000000000
     rm_primers = FALSE
+  } 
+  if(V == "V4-1PCR-up") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    nbases = 100000000000
+    rm_primers = FALSE
+    pool = TRUE
+    collapseNoMis = TRUE
   } 
   if(V == "V4-NIH") {
     
