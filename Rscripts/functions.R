@@ -2061,7 +2061,8 @@ compare_phyloseq_taxonomy <- function(physeq_A,
         phloseq_export_otu_tax(),
       by = "ASV" ,
       suffix = c("_A", "_B")) %>% 
-    select(-contains(c("Kingdom", "Phylum", "Class", "Order","length"))) %>%
+    # select(-contains(c("Kingdom", "Phylum", "Class", "Order","length"))) %>%
+    select(-contains(c("length"))) %>%
     select(-ASV_sequence) %>%
     select(contains(c("_A", "_B")), everything()) -> new_old_tax_df
   
