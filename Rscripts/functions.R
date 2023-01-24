@@ -226,7 +226,7 @@ run_atropos <- function(raw_files_path,
       for(i in seq_along(fnFs)) {
         system2(atropos, args = c("trim", "--pair-filter any",
                                   "--no-indels", "--discard-untrimmed", "--max-n 0", " -T ", NSLOTS,
-                                  paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
+                                  paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 4, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
                                   "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
                                   "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
                                   "-pe1", fnFs[i], "-pe2", fnRs[i],
@@ -240,7 +240,7 @@ run_atropos <- function(raw_files_path,
       for(i in seq_along(fnFs)) {
         system2(atropos, args = c( "--pair-filter any",
                                    "--no-indels", "--discard-untrimmed", "--max-n 0", "-j ", NSLOTS,
-                                   paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
+                                   paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 4, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
                                    # "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
                                    "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
                                    "--minimum-length ", MIN_L,
@@ -425,7 +425,7 @@ run_dada2_qplot <- function(prop.sample = 20,
 
 run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  maxee,
-                                                 truncQ = 6,
+                                                 truncQ = 0,
                                                  minLen = 100,
                                                  nthreads = 6,
                                                  maxLen = Inf,
@@ -610,13 +610,13 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     
@@ -2768,7 +2768,7 @@ run_dada2_pipe <- function(raw_files_path,
                            priors = FALSE,
                            trim_length = c(240,400),
                            trunclen = c(260,250),
-                           truncQ = 6,
+                           truncQ = 0,
                            maxee = c(3,4),
                            minLen = 100,
                            minover = 15,
