@@ -3492,3 +3492,44 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
   
 }
 
+
+#' @title Visualize alignment of the sequence refseq()
+#' @param 
+#' @param ..
+#' @author Florentin Constancias
+#' @note You might want to combine with  `subset_taxa()` `phyloseq_get_strains()` `physeq_glom_rename()`
+#' @return return the alignment file from `DECIPHER::AlignSeqs()` 
+#' @export
+#' @examples
+#' 
+#' 
+#'ps %>% 
+#'  phyloseq_get_strains() %>% 
+#' physeq_glom_rename(taxrank = "Strain", rename_ASV = "Strain") %>% 
+#' subset_taxa(Genus == "Anaerococcus")
+
+phyloseq_visualize_ASV_alignment <- function(phyloseq = NULL,
+                                             nthreads = 2,
+                                             openURL = TRUE,
+                                             htmlFile = paste(tempdir(), "/myXStringSet.html", sep = ""))
+{
+  #######------------------
+  require(tidyverse); require(phyloseq); require(DECIPHER)
+  #######------------------
+  
+  phyloseq@refseq %>% 
+    DECIPHER::AlignSeqs(myXStringSet = .,
+                        processors = nthreads,
+                        verbose = FALSE) -> ASV_al
+  
+  
+  #######------------------aligned %>% 
+  
+  
+  ASV_al %>% 
+    DECIPHER::BrowseSeqs(., highlight=NA,
+                         openURL = openURL,
+                         htmlFile = htmlFile)
+  
+  return(ASV_al)
+}
