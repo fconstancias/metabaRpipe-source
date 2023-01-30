@@ -223,15 +223,15 @@ run_atropos <- function(raw_files_path,
     if(atropos == "atropos")
     {
       
-    for(i in seq_along(fnFs)) {
-      system2(atropos, args = c("trim", "--pair-filter any",
-                                "--no-indels", "--discard-untrimmed", "--max-n 0", " -T ", NSLOTS,
-                                paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
-                                "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
-                                "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
-                                "-pe1", fnFs[i], "-pe2", fnRs[i],
-                                "--minimum-length ", MIN_L)) # input files
-    }
+      for(i in seq_along(fnFs)) {
+        system2(atropos, args = c("trim", "--pair-filter any",
+                                  "--no-indels", "--discard-untrimmed", "--max-n 0", " -T ", NSLOTS,
+                                  paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 4, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
+                                  "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
+                                  "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
+                                  "-pe1", fnFs[i], "-pe2", fnRs[i],
+                                  "--minimum-length ", MIN_L)) # input files
+      }
     }
     
     if(atropos == "cutadapt")
@@ -239,13 +239,13 @@ run_atropos <- function(raw_files_path,
       
       for(i in seq_along(fnFs)) {
         system2(atropos, args = c( "--pair-filter any",
-                                  "--no-indels", "--discard-untrimmed", "--max-n 0", "-j ", NSLOTS,
-                                  paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 2, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
-                                  # "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
-                                  "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
-                                  "--minimum-length ", MIN_L,
-                                  fnFs[i],  fnRs[i] # input file
-                                )) # input files
+                                   "--no-indels", "--discard-untrimmed", "--max-n 0", "-j ", NSLOTS,
+                                   paste("-g", PRIMER_F) , paste("-G", PRIMER_R), "-n", 4, #paste("-g", PRIMER_F, "-a", dada2:::rc(PRIMER_R)) , paste("-G", PRIMER_R, "-A", dada2:::rc(PRIMER_F)), "-n", 4,
+                                   # "-O", MIN_F %>% round(0), #primer match is >= 2/3 of primer length, from Fred Mahé's swarm pipeline
+                                   "-o", fnFs_cut[i], "-p", fnRs_cut[i], # output files
+                                   "--minimum-length ", MIN_L,
+                                   fnFs[i],  fnRs[i] # input file
+        )) # input files
       }
     }
   }
@@ -333,6 +333,7 @@ run_dada2_qplot <- function(prop.sample = 20,
     
     sample.names <- basename(fnFs) %>%
       str_extract(paste0(sep))
+    
     
     cat(paste0('\n# sample names list starts with : \n'))
     cat(sample.names)
@@ -424,7 +425,7 @@ run_dada2_qplot <- function(prop.sample = 20,
 
 run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  maxee,
-                                                 truncQ = 6,
+                                                 truncQ = 0,
                                                  minLen = 100,
                                                  nthreads = 6,
                                                  maxLen = Inf,
@@ -609,13 +610,13 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     dadaFs <- dada(derepFs, 
                    err=errF, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     dadaRs <- dada(derepRs, 
                    err=errR, 
                    multithread= nthreads, 
-                   pool=ifelse(pool == "FALSE", as.logical(pool), pool),
+                   pool=ifelse(pool %in% c("TRUE","FALSE"), as.logical(pool), pool),
                    priors = priors_seq)
     
     
@@ -2060,7 +2061,8 @@ compare_phyloseq_taxonomy <- function(physeq_A,
         phloseq_export_otu_tax(),
       by = "ASV" ,
       suffix = c("_A", "_B")) %>% 
-    select(-contains(c("Kingdom", "Phylum", "Class", "Order","length"))) %>%
+    # select(-contains(c("Kingdom", "Phylum", "Class", "Order","length"))) %>%
+    select(-contains(c("length"))) %>%
     select(-ASV_sequence) %>%
     select(contains(c("_A", "_B")), everything()) -> new_old_tax_df
   
@@ -2093,7 +2095,7 @@ compare_phyloseq_taxonomy <- function(physeq_A,
 phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") %>% subset_taxa(taxa_sums(physeq) > 1000) -> physeq
                                           threshold = 97,
                                           nthreads = 6,
-                                          # method = "complete",
+                                          method = "overlap",
                                           # showPlot = FALSE,
                                           export = FALSE,
                                           return = TRUE,
@@ -2144,14 +2146,21 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
   
   ## ------------------------------------------------------------------------
   
-  clusters <- DECIPHER::IdClusters(
-    # d, 
-    dna,
-    # showPlot = showPlot,
-    # method = method,
-    cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
-    processors = nthreads,
-    verbose = FALSE)
+  # clusters <- DECIPHER::IdClusters(
+  #   # d, 
+  #   dna,
+  #   # showPlot = showPlot,
+  #   # method = method,
+  #   cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
+  #   processors = nthreads,
+  #   verbose = FALSE)
+  
+  clusters <- DECIPHER::Clusterize(myXStringSet = dna, 
+                                   cutoff = (100-threshold) / 100,
+                                   method = method,
+                                   processors = nthreads,
+                                   verbose = FALSE)
+  
   
   ## ------------------------------------------------------------------------
   
@@ -2211,18 +2220,29 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
 #' @export
 #' @examples
 #'
+#' "https://raw.githubusercontent.com/tobiasgf/lulu/master/Example_data/centroids_test.txt" %>% Biostrings::readDNAStringSet(filepath = .) -> fa
 #'
+#' "https://raw.githubusercontent.com/tobiasgf/lulu/master/Example_data/otutable_test.txt" %>% read_tsv(.) %>%  column_to_rownames("...1") -> otu
 #'
-#'phyloseq_vsearch_lulu_cluster_ASV(readRDS("data/processed/physeq_update_11_1_21.RDS"),
-#'                               vsearch = "/Users/fconstan/miniconda3/envs/metabarcodingRpipeline/bin/vsearch",
-#'                                 dir = ("~/"), int_rm = TRUE) -> out
+#' phyloseq(otu_table(otu, taxa_are_rows = TRUE), fa) -> physeq
+#'
+#' https://github.com/tobiasgf/lulu#tutorial
+#' phyloseq_vsearch_lulu_cluster_ASV(physeq = physeq, vsearch = "/Users/fconstan/miniconda3/pkgs/vsearch-2.7.0-1/bin/vsearch", dir = ("~/"), int_rm = TRUE) -> out_blast
+#' out_blast$curated_result$curated_count
+#' out$curated_result$discarded_count
+#' phyloseq_vsearch_lulu_cluster_ASV(physeq = physeq, clust = "vsearch", vsearch = "/Users/fconstan/miniconda3/pkgs/vsearch-2.7.0-1/bin/vsearch", dir = ("~/"), int_rm = TRUE) -> out_vsearch
+#' physeq; out$physeq_curated
+
 
 phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") -> physeq
+                                              clust = "blast",
                                               vsearch = "vsearch",
-                                              dir = ("~/"),
+                                              blast_db_bin = "/Users/fconstan/Documents/ncbi-blast-2.13.0+/bin/makeblastdb",
+                                              blast_bin = "/Users/fconstan/Documents/ncbi-blast-2.13.0+/bin/blastn",
+                                              dir = ("~/lulu/"),
                                               fasta_file = "pre_lulu.fasta",
                                               match_list_file = "pre_lulu_vsearch.list.txt",
-                                              threshold = 80,
+                                              threshold = minimum_match,
                                               nthreads = 6,
                                               int_rm = TRUE,
                                               seed_value = 123,
@@ -2253,17 +2273,29 @@ phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/
   
   ## ------------------------------------------------------------------------
   
+  # refseq(physeq) %>%
+  #   dss2df() %>%
+  #   dplyr::rename(sequence = seq) %>%
+  #   dplyr::mutate(abundance = taxa_sums(physeq)) %>%
+  #   dplyr::select(-names) %>%
+  #   dada2::uniquesToFasta(fasta_path,
+  #                         ids=taxa_names(physeq))
+  # 
+  
   refseq(physeq) %>%
-    dss2df() %>%
-    dplyr::rename(sequence = seq) %>%
-    dplyr::mutate(abundance = taxa_sums(physeq)) %>%
-    dplyr::select(-names) %>%
-    dada2::uniquesToFasta(fasta_path,
-                          ids=taxa_names(physeq))
+    # dss2df() %>%
+    # select(-width) %>% 
+    Biostrings::writeXStringSet(fasta_path)
+  
+  # writeXStringSet(tmp_fa$seq, 'fname.fa')
   
   as(otu_table(physeq), "matrix") %>%
     as.data.frame()  -> otu_tab
   ## ------------------------------------------------------------------------
+  
+  if (clust == "vsearch"){
+    
+
   system2(vsearch, args = c("--version"))
   
   ## run vsearch
@@ -2276,12 +2308,46 @@ phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/
   )
   # vsearch --usearch_global OTU_sequences.fasta --db OTU_sequences.fasta --self --id .84 --iddef 1 --userout match_list.txt -userfields query+target+id --maxaccepts 0 --query_cov .9 --maxhits 10
   
+  }
   ## ------------------------------------------------------------------------
-  match_list_file_path %>%
-    read_tsv(col_names = c("ASVa", 
-                           "ASVb", 
-                           "id")) -> match_list_file
   
+  ## ------------------------------------------------------------------------
+  if (clust == "blast"){
+    
+    system2(blast_db_bin, args = c("-version"))
+    
+    ## run makeblastdb
+    # makeblastdb -in centroids_test.txt -parse_seqids -dbtype nucl
+    
+    system2(blast_db_bin, args = c("-in", fasta_path,
+                                   " -parse_seqids -dbtype nucl"))
+    ## run blast
+    
+    system2(blast_bin, args =  "-version")
+    
+    
+    # /Users/fconstan/Documents/ncbi-blast-2.13.0+/bin/blastn -db centroids_test.txt -outfmt '6 qseqid sseqid pident' -out match_list.txt -qcov_hsp_perc 80 -perc_identity 84 -query centroids_test.txt
+    
+    
+    system2(blast_bin,  args = c("-db", fasta_path, 
+                                 "-outfmt '6 qseqid sseqid pident'",
+                                 "-out", match_list_file_path,
+                                 "-perc_identity", minimum_match,
+                                 "-qcov_hsp_perc 80",
+                                 "-query", fasta_path,
+                                 "-num_threads", nthreads)
+    )
+    
+  }
+  ## ------------------------------------------------------------------------
+  
+  match_list_file_path %>%
+    read.table(., header=FALSE,as.is=TRUE, stringsAsFactors=FALSE) -> match_list_file
+  
+    # read_tsv(col_names = c("ASVa", 
+    #                        "ASVb", 
+    #                        "id")) -> match_list_file
+    # 
   if(int_rm == TRUE){
     file.remove(fasta_path, match_list_file_path)
     
@@ -2702,7 +2768,7 @@ run_dada2_pipe <- function(raw_files_path,
                            priors = FALSE,
                            trim_length = c(240,400),
                            trunclen = c(260,250),
-                           truncQ = 6,
+                           truncQ = 0,
                            maxee = c(3,4),
                            minLen = 100,
                            minover = 15,
@@ -2732,6 +2798,20 @@ run_dada2_pipe <- function(raw_files_path,
     minover = 40
     nbases = 100000000000
   } 
+  if(V == "V4-2PCR-up") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    nbases = 100000000000
+    pool = TRUE
+    collapseNoMis = TRUE
+    tax_threshold = 80
+  } 
   if(V == "V4-1PCR") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
@@ -2743,6 +2823,22 @@ run_dada2_pipe <- function(raw_files_path,
     minover = 40
     nbases = 100000000000
     rm_primers = FALSE
+  } 
+  if(V == "V4-1PCR-up") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 40
+    nbases = 100000000000
+    rm_primers = FALSE
+    pool = TRUE
+    collapseNoMis = TRUE
+    tax_threshold = 80
+    
   } 
   if(V == "V4-NIH") {
     
@@ -3247,25 +3343,25 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
   ## ------------------------------------------------------------------------
   if (isTRUE(merge_metada))
   {
-  ps1 %>% 
-    sample_data() %>% 
-    data.frame() %>% 
-    rownames_to_column('id_tmp') -> ps1_meta
-  
-  ps2 %>% 
-    sample_data() %>% 
-    data.frame()  %>% 
-    rownames_to_column('id_tmp') -> ps2_meta
-  
-  ps1_meta %>% 
-    colnames() %>% 
-    intersect(ps2_meta %>% colnames()) -> commun_cols
-  
-  ps1_meta %>% 
-    select(commun_cols) %>% 
-    rbind(ps2_meta %>% 
-            select(all_of(commun_cols))) %>% 
-    column_to_rownames('id_tmp')-> common_col_bind
+    ps1 %>% 
+      sample_data() %>% 
+      data.frame() %>% 
+      rownames_to_column('id_tmp') -> ps1_meta
+    
+    ps2 %>% 
+      sample_data() %>% 
+      data.frame()  %>% 
+      rownames_to_column('id_tmp') -> ps2_meta
+    
+    ps1_meta %>% 
+      colnames() %>% 
+      intersect(ps2_meta %>% colnames()) -> commun_cols
+    
+    ps1_meta %>% 
+      select(commun_cols) %>% 
+      rbind(ps2_meta %>% 
+              select(all_of(commun_cols))) %>% 
+      column_to_rownames('id_tmp')-> common_col_bind
   }
   ## ------------------------------------------------------------------------
   
@@ -3366,7 +3462,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
       out <- list("cluster_output" = cluster_out,
                   "merged_ps" = full_merged_ps)
     }
-
+    
   }
   
   ## ------------------------------------------------------------------------
