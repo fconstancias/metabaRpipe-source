@@ -2853,6 +2853,7 @@ run_dada2_pipe <- function(raw_files_path,
     nbases = 100000000000
     rm_primers = FALSE
     collapseNoMis = TRUE
+    pool = TRUE
     
   } 
   if(V == "test") {
