@@ -3322,176 +3322,176 @@ FM_2phyloseq <- function(input_table = NULL,
 #' @examples
 #' 
 
-phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
-  
-  ## ------------------------------------------------------------------------
-  require(phyloseq); require(tidyverse)
-  # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
-  # ## ------------------------------------------------------------------------
-  # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>%
-  # readRDS() -> ps1
-  # # 
-  # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>%
-  # readRDS() -> ps2
-  ## ------------------------------------------------------------------------
-  
-  ps1 %>% 
-    phloseq_export_otu_tax() -> ps1_df
-  
-  ps2 %>% 
-    phloseq_export_otu_tax() -> ps2_df
-  
-  ## ------------------------------------------------------------------------
-  if (isTRUE(merge_metada))
-  {
-    ps1 %>% 
-      sample_data() %>% 
-      data.frame() %>% 
-      rownames_to_column('id_tmp') -> ps1_meta
-    
-    ps2 %>% 
-      sample_data() %>% 
-      data.frame()  %>% 
-      rownames_to_column('id_tmp') -> ps2_meta
-    
-    ps1_meta %>% 
-      colnames() %>% 
-      intersect(ps2_meta %>% colnames()) -> commun_cols
-    
-    ps1_meta %>% 
-      select(commun_cols) %>% 
-      rbind(ps2_meta %>% 
-              select(all_of(commun_cols))) %>% 
-      column_to_rownames('id_tmp')-> common_col_bind
-  }
-  ## ------------------------------------------------------------------------
-  
-  full_join(ps1_df,
-            ps2_df,
-            by = c("ASV_sequence" = "ASV_sequence")) -> merged_df_ps
-  
-  ## ------------------------------------------------------------------------
-  
-  merged_df_ps %>% 
-    select(all_of(c("ASV_sequence", 
-                    sample_names(ps1), 
-                    sample_names(ps2)))) %>% 
-    replace(is.na(.), 0) %>% 
-    replace(is.character(.), 0)-> otu_merged
-  
-  merged_df_ps %>% 
-    # na_if("NA") %>% 
-    # na_if("<NA>") %>% 
-    # na_if(NA) %>% 
-    select("ASV_sequence", 
-           starts_with("Kingdom"), 
-           starts_with("Phylum"),
-           starts_with("Class"),
-           starts_with("Order"),
-           starts_with("Family"),
-           starts_with("Genus"),
-           starts_with("Species")) %>% 
-    mutate(Kingdom_merged = ifelse(is.na(Kingdom.x), Kingdom.y , Kingdom.x),
-           Phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
-           Class_merged= ifelse(is.na(Class.x), Class.y , Class.x),
-           Order_merged = ifelse(is.na(Order.x), Order.y , Order.x),
-           Family_merged = ifelse(is.na(Family.x), Family.y , Family.x),
-           Genus_merged = ifelse(is.na(Genus.x), Genus.y , Genus.x),
-           Species_merged = ifelse(is.na(Species.x), Species.y , Species.x)) %>% 
-    select(ASV_sequence, Kingdom_merged:Species_merged) -> tax_merged
-  
-  ## ------------------------------------------------------------------------
-  
-  otu_merged %>% 
-    left_join(tax_merged,
-              by = c("ASV_sequence" = "ASV_sequence")) %>% 
-    mutate(Total = rowSums(select_if(., is.numeric), na.rm = TRUE)) %>% 
-    arrange(-Total) %>% 
-    select(-Total) %>% 
-    column_to_rownames('ASV_sequence') -> full_merged
-  
-  ## ------------------------------------------------------------------------
-  
-  merge_phyloseq(full_merged %>%  
-                   select_if(is.double) %>% 
-                   replace(is.na(.), 0) %>% 
-                   as.matrix() %>% 
-                   otu_table(taxa_are_rows = TRUE),
-                 full_merged %>%  
-                   select_if(is.character) %>% 
-                   as.matrix() %>% 
-                   tax_table()) -> full_merged_ps
-  
-  ## ------------------------------------------------------------------------
-  
-  ASV_seq <- Biostrings::DNAStringSet(taxa_names(full_merged_ps))
-  names(ASV_seq) <- taxa_names(full_merged_ps)
-  # 
-  out <- merge_phyloseq(full_merged_ps,
-                        ASV_seq)
-  
-  taxa_names(out) <- paste0("ASV", str_pad(seq(ntaxa(full_merged_ps)),
-                                           nchar(ntaxa(full_merged_ps)),
-                                           pad = "0"))
-  # phyloseq::rank_names(out) <- 
-  
-  colnames(tax_table(out))  <- stringr::str_replace_all(phyloseq::rank_names(out), "_merged", "")
-  
-  if (isTRUE(merge_metada))
-  {
-    out <- merge_phyloseq(out,
-                          common_col_bind %>%  sample_data()
-    )
-  }
-  ## ------------------------------------------------------------------------
-  
-  if (isTRUE(clust_ASV_seq))
-  {
-    # require(DECIPHER)
-    ## ------------------------------------------------------------------------
-    
-    out %>% 
-      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
-    
-    ## ------------------------------------------------------------------------
-    
-    print(paste0("Number of sequences clustered = ",full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa()))
-    
-    ## ------------------------------------------------------------------------
-    if(full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa() > 0){
-      
-      out <- list("cluster_output" = cluster_out,
-                  "merged_ps" = full_merged_ps)
-    }
-    
-  }
-  
-  ## ------------------------------------------------------------------------
-  
-  return(out)
-  
-  ## ------------------------------------------------------------------------
-  
-  # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
-  # 
-  # out %>%
-  # physeq_add_metadata(physeq = .,
-  #                     metadata = "~/Desktop/test_metadata.tsv" %>%
-  #                      read_tsv(),
-  #                     sample_column = "sample_name") -> physeq
-  #   #
-  # physeq %>%
-  #   transform_sample_counts(function(x) x/sum(x) * 1000) %>% # transform as percentage before filtering
-  #   # prune_taxa(rm_rare_asv, .) %>% # keep only the ASV with id matching the rm_rare_asv vector from the phyloseq object
-  #   phyloseq_ampvis_heatmap(physeq = .,
-  #                           transform = FALSE, # extract only the taxa to display - after percentage normalisation
-  #                           facet_by = "group",
-  #                           group_by = "sample_name",
-  #                           ntax =  10)  -> heat_rm_rare_asv
-  # 
-  # heat_rm_rare_asv
-  
-}
+# phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
+#   
+#   ## ------------------------------------------------------------------------
+#   require(phyloseq); require(tidyverse)
+#   # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
+#   # ## ------------------------------------------------------------------------
+#   # "~/Documents/GitHub/mIMT/data/ps_dada_silva_v138.1_up.RDS" %>%
+#   # readRDS() -> ps1
+#   # # 
+#   # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>%
+#   # readRDS() -> ps2
+#   ## ------------------------------------------------------------------------
+#   
+#   ps1 %>% 
+#     phloseq_export_otu_tax() -> ps1_df
+#   
+#   ps2 %>% 
+#     phloseq_export_otu_tax() -> ps2_df
+#   
+#   ## ------------------------------------------------------------------------
+#   if (isTRUE(merge_metada))
+#   {
+#     ps1 %>% 
+#       sample_data() %>% 
+#       data.frame() %>% 
+#       rownames_to_column('id_tmp') -> ps1_meta
+#     
+#     ps2 %>% 
+#       sample_data() %>% 
+#       data.frame()  %>% 
+#       rownames_to_column('id_tmp') -> ps2_meta
+#     
+#     ps1_meta %>% 
+#       colnames() %>% 
+#       intersect(ps2_meta %>% colnames()) -> commun_cols
+#     
+#     ps1_meta %>% 
+#       select(commun_cols) %>% 
+#       rbind(ps2_meta %>% 
+#               select(all_of(commun_cols))) %>% 
+#       column_to_rownames('id_tmp')-> common_col_bind
+#   }
+#   ## ------------------------------------------------------------------------
+#   
+#   full_join(ps1_df,
+#             ps2_df,
+#             by = c("ASV_sequence" = "ASV_sequence")) -> merged_df_ps
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   merged_df_ps %>% 
+#     select(all_of(c("ASV_sequence", 
+#                     sample_names(ps1), 
+#                     sample_names(ps2)))) %>% 
+#     replace(is.na(.), 0) %>% 
+#     replace(is.character(.), 0)-> otu_merged
+#   
+#   merged_df_ps %>% 
+#     # na_if("NA") %>% 
+#     # na_if("<NA>") %>% 
+#     # na_if(NA) %>% 
+#     select("ASV_sequence", 
+#            starts_with("Kingdom"), 
+#            starts_with("Phylum"),
+#            starts_with("Class"),
+#            starts_with("Order"),
+#            starts_with("Family"),
+#            starts_with("Genus"),
+#            starts_with("Species")) %>% 
+#     mutate(Kingdom_merged = ifelse(is.na(Kingdom.x), Kingdom.y , Kingdom.x),
+#            Phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
+#            Class_merged= ifelse(is.na(Class.x), Class.y , Class.x),
+#            Order_merged = ifelse(is.na(Order.x), Order.y , Order.x),
+#            Family_merged = ifelse(is.na(Family.x), Family.y , Family.x),
+#            Genus_merged = ifelse(is.na(Genus.x), Genus.y , Genus.x),
+#            Species_merged = ifelse(is.na(Species.x), Species.y , Species.x)) %>% 
+#     select(ASV_sequence, Kingdom_merged:Species_merged) -> tax_merged
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   otu_merged %>% 
+#     left_join(tax_merged,
+#               by = c("ASV_sequence" = "ASV_sequence")) %>% 
+#     mutate(Total = rowSums(select_if(., is.numeric), na.rm = TRUE)) %>% 
+#     arrange(-Total) %>% 
+#     select(-Total) %>% 
+#     column_to_rownames('ASV_sequence') -> full_merged
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   merge_phyloseq(full_merged %>%  
+#                    select_if(is.double) %>% 
+#                    replace(is.na(.), 0) %>% 
+#                    as.matrix() %>% 
+#                    otu_table(taxa_are_rows = TRUE),
+#                  full_merged %>%  
+#                    select_if(is.character) %>% 
+#                    as.matrix() %>% 
+#                    tax_table()) -> full_merged_ps
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   ASV_seq <- Biostrings::DNAStringSet(taxa_names(full_merged_ps))
+#   names(ASV_seq) <- taxa_names(full_merged_ps)
+#   # 
+#   out <- merge_phyloseq(full_merged_ps,
+#                         ASV_seq)
+#   
+#   taxa_names(out) <- paste0("ASV", str_pad(seq(ntaxa(full_merged_ps)),
+#                                            nchar(ntaxa(full_merged_ps)),
+#                                            pad = "0"))
+#   # phyloseq::rank_names(out) <- 
+#   
+#   colnames(tax_table(out))  <- stringr::str_replace_all(phyloseq::rank_names(out), "_merged", "")
+#   
+#   if (isTRUE(merge_metada))
+#   {
+#     out <- merge_phyloseq(out,
+#                           common_col_bind %>%  sample_data()
+#     )
+#   }
+#   ## ------------------------------------------------------------------------
+#   
+#   if (isTRUE(clust_ASV_seq))
+#   {
+#     # require(DECIPHER)
+#     ## ------------------------------------------------------------------------
+#     
+#     out %>% 
+#       phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
+#     
+#     ## ------------------------------------------------------------------------
+#     
+#     print(paste0("Number of sequences clustered = ",full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa()))
+#     
+#     ## ------------------------------------------------------------------------
+#     if(full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa() > 0){
+#       
+#       out <- list("cluster_output" = cluster_out,
+#                   "merged_ps" = full_merged_ps)
+#     }
+#     
+#   }
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   return(out)
+#   
+#   ## ------------------------------------------------------------------------
+#   
+#   # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
+#   # 
+#   # out %>%
+#   # physeq_add_metadata(physeq = .,
+#   #                     metadata = "~/Desktop/test_metadata.tsv" %>%
+#   #                      read_tsv(),
+#   #                     sample_column = "sample_name") -> physeq
+#   #   #
+#   # physeq %>%
+#   #   transform_sample_counts(function(x) x/sum(x) * 1000) %>% # transform as percentage before filtering
+#   #   # prune_taxa(rm_rare_asv, .) %>% # keep only the ASV with id matching the rm_rare_asv vector from the phyloseq object
+#   #   phyloseq_ampvis_heatmap(physeq = .,
+#   #                           transform = FALSE, # extract only the taxa to display - after percentage normalisation
+#   #                           facet_by = "group",
+#   #                           group_by = "sample_name",
+#   #                           ntax =  10)  -> heat_rm_rare_asv
+#   # 
+#   # heat_rm_rare_asv
+#   
+# }
 
 
 #' @title Visualize alignment of the sequence refseq()
