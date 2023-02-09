@@ -1498,13 +1498,16 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(sequences),
                                      anchor = NA,
                                      processors = nthreads)
-    
+     Sys.sleep(1000)# avoid overheating here
+
     phang_align <- phangorn::phyDat(as(alignment, 'matrix'), type='DNA')
-    
+    Sys.sleep(1000)# avoid overheating here
+
     dm <- phangorn::dist.ml(phang_align)
     
     treeNJ <- phangorn::NJ(dm)  # note, tip order != sequence order
-    
+    Sys.sleep(1000)# avoid overheating here
+
     fit = phangorn::pml(treeNJ, data=phang_align)
     
     ## negative edges length changed to 0!
