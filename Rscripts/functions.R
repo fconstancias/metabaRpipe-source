@@ -480,7 +480,6 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     filt_path <- file.path(filt_dir,
                            run_list[i])
     
-    
     dir.create(filt_path, showWarnings = TRUE, recursive = TRUE)
     
     cat(paste0('\n# output dir :  ',filt_path,'\n'))
@@ -492,9 +491,6 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     
     fnFs <- fnFs_cut[exists]
     fnRs <- fnRs_cut[exists]
-    
-    # readFastq(fnRs) %>% #idea to filter based on length
-    #   ShortRead::sread()
     
     if(length(fnRs) != length(fnFs)) stop ("Forward and reverse files do not match.")
     
@@ -1415,7 +1411,7 @@ run_merge_phyloseq <- function(merged_table = NULL,
   ## ------------------------------------------------------------------------
   ## add ASV as refseq part of the phyloseq object
   
-  physeq@refseq = Biostrings::DNAStringSet(taxa_names(physeq)) # https://github.com/benjjneb/dada2/issues/613
+  physeq@refseq = Biostrings::DNAStringSet(taxa_names(physeq) ) # %>% sample()# https://github.com/benjjneb/dada2/issues/613
   
   ## ------------------------------------------------------------------------
   
@@ -1498,16 +1494,16 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     alignment <- DECIPHER::AlignSeqs(Biostrings::DNAStringSet(sequences),
                                      anchor = NA,
                                      processors = nthreads)
-     Sys.sleep(1000)# avoid overheating here
-
+    # Sys.sleep(1000)# avoid overheating here
+    
     phang_align <- phangorn::phyDat(as(alignment, 'matrix'), type='DNA')
-    Sys.sleep(1000)# avoid overheating here
-
+    # Sys.sleep(1000)# avoid overheating here
+    
     dm <- phangorn::dist.ml(phang_align)
     
     treeNJ <- phangorn::NJ(dm)  # note, tip order != sequence order
-    Sys.sleep(1000)# avoid overheating here
-
+    # Sys.sleep(1000)# avoid overheating here
+    
     fit = phangorn::pml(treeNJ, data=phang_align)
     
     ## negative edges length changed to 0!
@@ -2094,7 +2090,6 @@ compare_phyloseq_taxonomy <- function(physeq_A,
 #'
 #'
 
-
 phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") %>% subset_taxa(taxa_sums(physeq) > 1000) -> physeq
                                           threshold = 97,
                                           nthreads = 6,
@@ -2298,19 +2293,19 @@ phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/
   
   if (clust == "vsearch"){
     
-
-  system2(vsearch, args = c("--version"))
-  
-  ## run vsearch
-  system2(vsearch, args = c("--usearch_global ", fasta_path, 
-                            "--db", fasta_path,
-                            "--self --id", threshold/100,
-                            "--iddef 1 --userout ", match_list_file_path, 
-                            "--threads ", nthreads,
-                            "-userfields query+target+id --maxaccepts 0 --query_cov 0.9 --maxhits 10")
-  )
-  # vsearch --usearch_global OTU_sequences.fasta --db OTU_sequences.fasta --self --id .84 --iddef 1 --userout match_list.txt -userfields query+target+id --maxaccepts 0 --query_cov .9 --maxhits 10
-  
+    
+    system2(vsearch, args = c("--version"))
+    
+    ## run vsearch
+    system2(vsearch, args = c("--usearch_global ", fasta_path, 
+                              "--db", fasta_path,
+                              "--self --id", threshold/100,
+                              "--iddef 1 --userout ", match_list_file_path, 
+                              "--threads ", nthreads,
+                              "-userfields query+target+id --maxaccepts 0 --query_cov 0.9 --maxhits 10")
+    )
+    # vsearch --usearch_global OTU_sequences.fasta --db OTU_sequences.fasta --self --id .84 --iddef 1 --userout match_list.txt -userfields query+target+id --maxaccepts 0 --query_cov .9 --maxhits 10
+    
   }
   ## ------------------------------------------------------------------------
   
@@ -2347,10 +2342,10 @@ phyloseq_vsearch_lulu_cluster_ASV <- function(physeq, # readRDS("data/processed/
   match_list_file_path %>%
     read.table(., header=FALSE,as.is=TRUE, stringsAsFactors=FALSE) -> match_list_file
   
-    # read_tsv(col_names = c("ASVa", 
-    #                        "ASVb", 
-    #                        "id")) -> match_list_file
-    # 
+  # read_tsv(col_names = c("ASVa", 
+  #                        "ASVb", 
+  #                        "id")) -> match_list_file
+  # 
   if(int_rm == TRUE){
     file.remove(fasta_path, match_list_file_path)
     
@@ -2891,7 +2886,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(4,5)
     minLen = 160
     minover = 10
-    
+    rm_primers = TRUE
   }
   if(V == "V3V4_2x250"){
     
@@ -2902,7 +2897,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(3,4)
     minLen = 160
     minover = 10
-    
+    rm_primers = TRUE
   }
   if(V == "ITS2"){
     
@@ -2913,7 +2908,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(4,5)
     minLen = 120
     minover = 20
-    
+    rm_primers = TRUE
   }
   
   if(V == "V3"){
@@ -2925,7 +2920,7 @@ run_dada2_pipe <- function(raw_files_path,
     maxee = c(2,3)
     minLen = 120
     minover = 60
-    
+    rm_primers = TRUE
   }
   
   
@@ -3027,6 +3022,7 @@ run_dada2_pipe <- function(raw_files_path,
                      merged_run_dir = merged_run_dir) -> ps
   
   
+  
   if(run_phylo == TRUE) {
     cat(paste0('\n##',"running run_DECIPHER_phangorn_phylogeny() '\n\n'"))
     
@@ -3035,6 +3031,10 @@ run_dada2_pipe <- function(raw_files_path,
                                 export = TRUE,
                                 output_phyloseq = output_phyloseq_phylo) -> ps
   }
+  
+  # ps %>% 
+  #   phyloseq_validate() -> ps
+  
   out <- list("qplot" = qplot,
               "filtering_denoising" = filtered,
               "merging" = merge,
@@ -3330,7 +3330,7 @@ FM_2phyloseq <- function(input_table = NULL,
 #' 
 
 phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
-
+  
   ## ------------------------------------------------------------------------
   require(phyloseq); require(tidyverse)
   # source("https://raw.githubusercontent.com/fconstancias/metabaRpipe-source/master/Rscripts/functions.R")
@@ -3341,13 +3341,13 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
   # "~/Documents/GitHub/NRP72-FBT/data/processed/16S/1/ps_silva_dada2_human_chicken_meta_fact.RDS" %>%
   # readRDS() -> ps2
   ## ------------------------------------------------------------------------
-
+  
   ps1 %>%
     phloseq_export_otu_tax() -> ps1_df
-
+  
   ps2 %>%
     phloseq_export_otu_tax() -> ps2_df
-
+  
   ## ------------------------------------------------------------------------
   if (isTRUE(merge_metada))
   {
@@ -3355,16 +3355,16 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
       sample_data() %>%
       data.frame() %>%
       rownames_to_column('id_tmp') -> ps1_meta
-
+    
     ps2 %>%
       sample_data() %>%
       data.frame()  %>%
       rownames_to_column('id_tmp') -> ps2_meta
-
+    
     ps1_meta %>%
       colnames() %>%
       intersect(ps2_meta %>% colnames()) -> commun_cols
-
+    
     ps1_meta %>%
       select(commun_cols) %>%
       rbind(ps2_meta %>%
@@ -3372,20 +3372,20 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
       column_to_rownames('id_tmp')-> common_col_bind
   }
   ## ------------------------------------------------------------------------
-
+  
   full_join(ps1_df,
             ps2_df,
             by = c("ASV_sequence" = "ASV_sequence")) -> merged_df_ps
-
+  
   ## ------------------------------------------------------------------------
-
+  
   merged_df_ps %>%
     select(all_of(c("ASV_sequence",
                     sample_names(ps1),
                     sample_names(ps2)))) %>%
     replace(is.na(.), 0) %>%
     replace(is.character(.), 0)-> otu_merged
-
+  
   merged_df_ps %>%
     # na_if("NA") %>%
     # na_if("<NA>") %>%
@@ -3406,9 +3406,9 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
            Genus_merged = ifelse(is.na(Genus.x), Genus.y , Genus.x),
            Species_merged = ifelse(is.na(Species.x), Species.y , Species.x)) %>%
     select(ASV_sequence, Kingdom_merged:Species_merged) -> tax_merged
-
+  
   ## ------------------------------------------------------------------------
-
+  
   otu_merged %>%
     left_join(tax_merged,
               by = c("ASV_sequence" = "ASV_sequence")) %>%
@@ -3416,9 +3416,9 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
     arrange(-Total) %>%
     select(-Total) %>%
     column_to_rownames('ASV_sequence') -> full_merged
-
+  
   ## ------------------------------------------------------------------------
-
+  
   merge_phyloseq(full_merged %>%
                    select_if(is.double) %>%
                    replace(is.na(.), 0) %>%
@@ -3428,22 +3428,22 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
                    select_if(is.character) %>%
                    as.matrix() %>%
                    tax_table()) -> full_merged_ps
-
+  
   ## ------------------------------------------------------------------------
-
+  
   ASV_seq <- Biostrings::DNAStringSet(taxa_names(full_merged_ps))
   names(ASV_seq) <- taxa_names(full_merged_ps)
   #
   out <- merge_phyloseq(full_merged_ps,
                         ASV_seq)
-
+  
   taxa_names(out) <- paste0("ASV", str_pad(seq(ntaxa(full_merged_ps)),
                                            nchar(ntaxa(full_merged_ps)),
                                            pad = "0"))
   # phyloseq::rank_names(out) <-
-
+  
   colnames(tax_table(out))  <- stringr::str_replace_all(phyloseq::rank_names(out), "_merged", "")
-
+  
   if (isTRUE(merge_metada))
   {
     out <- merge_phyloseq(out,
@@ -3451,34 +3451,34 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
     )
   }
   ## ------------------------------------------------------------------------
-
+  
   if (isTRUE(clust_ASV_seq))
   {
     # require(DECIPHER)
     ## ------------------------------------------------------------------------
-
+    
     out %>%
       phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
-
+    
     ## ------------------------------------------------------------------------
-
+    
     print(paste0("Number of sequences clustered = ",full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa()))
-
+    
     ## ------------------------------------------------------------------------
     if(full_merged_ps %>%  ntaxa() - cluster_out$physeq_clustered %>%  ntaxa() > 0){
-
+      
       out <- list("cluster_output" = cluster_out,
                   "merged_ps" = full_merged_ps)
     }
-
+    
   }
-
+  
   ## ------------------------------------------------------------------------
-
+  
   return(out)
-
+  
   ## ------------------------------------------------------------------------
-
+  
   # source("https://raw.githubusercontent.com/fconstancias/DivComAnalyses/master/R/phyloseq_heatmap.R")
   #
   # out %>%
@@ -3497,7 +3497,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
   #                           ntax =  10)  -> heat_rm_rare_asv
   #
   # heat_rm_rare_asv
-
+  
 }
 
 
@@ -3541,3 +3541,4 @@ phyloseq_visualize_ASV_alignment <- function(phyloseq = NULL,
   
   return(ASV_al)
 }
+
