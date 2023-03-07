@@ -3333,7 +3333,7 @@ FM_2phyloseq <- function(input_table = NULL,
 
 
 
-phyloseq_validate <- function(physeq, phylo = TRUE, otu = TRUE){
+phyloseq_validate <- function(physeq, verbose = TRUE, remove_undetected = TRUE){
   if(isTRUE(phylo)){
   set.seed(123)
   physeq@refseq %>% names() %>% sample -> names(physeq@refseq)
