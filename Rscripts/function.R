@@ -3333,15 +3333,18 @@ FM_2phyloseq <- function(input_table = NULL,
 
 
 
-phyloseq_validate <- function(physeq){
+phyloseq_validate <- function(physeq, phylo = TRUE, otu = TRUE){
+  if(isTRUE(phylo)){
   set.seed(123)
   physeq@refseq %>% names() %>% sample -> names(physeq@refseq)
   
+  }
   # physeq@tax_table %>% as.data.frame() %>%  sample() 
-  
+  if(isTRUE(otu)){
+    
   set.seed(123)
   phyloseq_check(physeq) -> physeq
-  
+  }
   
   return(physeq)
   
