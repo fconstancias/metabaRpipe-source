@@ -3133,7 +3133,7 @@ physeq_export_qiime <- function(physeq,
   
   set.seed(123)
   physeq %>% 
-    physeq_validate() -> physeq
+    phyloseq_validate() -> physeq
   ## ------------------------------------------------------------------------
   dir.create(output_dir, recursive = TRUE)
   
@@ -3340,11 +3340,11 @@ phyloseq_validate <- function(physeq, verbose = TRUE, remove_undetected = TRUE){
   
   }
   # physeq@tax_table %>% as.data.frame() %>%  sample() 
-  if(isTRUE(otu)){
-    
-  set.seed(123)
-  phyloseq_check(physeq) -> physeq
-  }
+  # if(isTRUE(otu)){
+  #   
+  # set.seed(123)
+  # phyloseq_check(physeq) -> physeq
+  # }
   
   return(physeq)
   
