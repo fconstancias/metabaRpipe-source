@@ -3131,9 +3131,9 @@ physeq_export_qiime <- function(physeq,
     physeq %>% readRDS()  -> physeq
   }
   
-  set.seed(123)
-  physeq %>% 
-    phyloseq_validate() -> physeq
+  # set.seed(123)
+  # physeq %>% 
+  #   phyloseq_validate() -> physeq
   ## ------------------------------------------------------------------------
   dir.create(output_dir, recursive = TRUE)
   
