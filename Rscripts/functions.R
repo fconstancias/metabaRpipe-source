@@ -1842,7 +1842,7 @@ phyloseq_dada2_tax <- function(physeq, # readRDS("data/processed/physeq_update_1
                                threshold = 60,
                                db, # db ="~/db/DADA2/silva_nr99_v138_train_set.fa.gz"
                                db_species, # db_species ="~/db/DADA2/silva_species_assignment_v138.fa.gz"
-                               nthreads = 6,
+                               nthreads = 1,
                                tryRC = FALSE,
                                seed_value = 123,
                                bootlabel = "_Boot",
