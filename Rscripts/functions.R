@@ -2097,6 +2097,7 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
                                           # showPlot = FALSE,
                                           export = FALSE,
                                           return = TRUE,
+                                          old_deciph = FALSE,
                                           full_return = TRUE){
   
   ## ------------------------------------------------------------------------
@@ -2136,29 +2137,33 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
   ## ------------------------------------------------------------------------
   dna <- refseq(physeq)
   
-  # aln <- DECIPHER::AlignSeqs(dna, 
-  #                            processors = nthreads)
-  # 
-  # d <- DECIPHER::DistanceMatrix(aln, 
-  #                               processors = nthreads)
-  
-  ## ------------------------------------------------------------------------
-  
-  # clusters <- DECIPHER::IdClusters(
-  #   # d, 
-  #   dna,
-  #   # showPlot = showPlot,
-  #   # method = method,
-  #   cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
-  #   processors = nthreads,
-  #   verbose = FALSE)
-  
-  clusters <- DECIPHER::Clusterize(myXStringSet = dna, 
-                                   cutoff = (100-threshold) / 100,
-                                   method = method,
-                                   processors = nthreads,
-                                   verbose = FALSE)
-  
+  if(old_deciph == TRUE){
+    
+    aln <- DECIPHER::AlignSeqs(dna,
+                               processors = nthreads)
+    
+    d <- DECIPHER::DistanceMatrix(aln,
+                                  processors = nthreads)
+    
+    ## ------------------------------------------------------------------------
+    
+    clusters <- DECIPHER::IdClusters(
+      # d,
+      dna,
+      # showPlot = showPlot,
+      # method = method,
+      cutoff = (100-threshold) / 100, # corresponds to 97% OTUs
+      processors = nthreads,
+      verbose = FALSE)
+    
+  }if(old_deciph == FALSE){
+    
+    clusters <- DECIPHER::Clusterize(myXStringSet = dna, 
+                                     cutoff = (100-threshold) / 100,
+                                     method = method,
+                                     processors = nthreads,
+                                     verbose = FALSE)
+  }
   
   ## ------------------------------------------------------------------------
   
