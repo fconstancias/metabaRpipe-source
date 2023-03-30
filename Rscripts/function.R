@@ -3131,7 +3131,8 @@ physeq_export_qiime <- function(physeq,
     physeq %>% readRDS()  -> physeq
   }
   
-  # set.seed(123)
+  
+  set.seed(123); sample(sample_names(physeq)) -> sample_names(physeq) 
   # physeq %>% 
   #   phyloseq_validate() -> physeq
   ## ------------------------------------------------------------------------
@@ -3182,14 +3183,21 @@ physeq_export_qiime <- function(physeq,
   
   if(!is.null(physeq@phy_tree)){
     physeq_2biom %>%
-      phy_tree() %>%
+      phy_tree() -> phylo
+    
+
+    set.seed(123);sample( phylo$tip.label) ->  phylo$tip.label
+    
+    phylo %>% 
       ape::write.tree(paste0(output_dir,"/","asv_neweek.tre"))
   }
   
   if(!is.null(physeq@refseq)){
     
     physeq_2biom %>%
-      refseq() %>%
+      refseq() -> ref_seq
+    
+    set.seed(123);sample(names(ref_seq)) -> names(ref_seq)
       # sample() %>% 
       Biostrings::writeXStringSet(paste0(output_dir,"/","asv.fna"), append=FALSE,
                                   compress=FALSE, compression_level=NA, format="fasta")
