@@ -2156,7 +2156,8 @@ phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/phys
       processors = nthreads,
       verbose = FALSE)
     
-  }if(old_deciph == FALSE){
+  }
+  if(old_deciph == FALSE){
     
     clusters <- DECIPHER::Clusterize(myXStringSet = dna, 
                                      cutoff = (100-threshold) / 100,
