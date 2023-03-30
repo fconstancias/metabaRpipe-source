@@ -2092,7 +2092,7 @@ compare_phyloseq_taxonomy <- function(physeq_A,
 
 phyloseq_DECIPHER_cluster_ASV <- function(physeq, # readRDS("data/processed/physeq_update_11_1_21.RDS") %>% subset_taxa(taxa_sums(physeq) > 1000) -> physeq
                                           threshold = 97,
-                                          nthreads = 6,
+                                          nthreads = 1,
                                           method = "overlap",
                                           # showPlot = FALSE,
                                           export = FALSE,
