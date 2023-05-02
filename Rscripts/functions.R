@@ -433,6 +433,8 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  pool = "pseudo",
                                                  priors = "FALSE",
                                                  minover = 12,
+                                                 trimLeft = c(0,0),
+                                                 trimRight = c(0,0),
                                                  cut_dir = "dada2/00_atropos_primer_removed",
                                                  filt_dir = "dada2/02_dada2_filtered_denoised_merged",
                                                  cut_file_pattern = c("_primersout_R1_.fastq.gz","_primersout_R2_.fastq.gz"),
@@ -518,7 +520,7 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     
     out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=trunclen, trimLeft = 0, trimRight = 0,
                          maxEE=maxee, maxLen = maxLen,  rm.phix=TRUE, maxN=0, minLen=minLen, verbose = T,
-                         compress=TRUE, multithread= nthreads, truncQ = truncQ, n = 1e5, OMP = FALSE)
+                         compress=TRUE, multithread= nthreads, truncQ = truncQ,trimLeft = trimLeft, trimRight = trimRight,  n = 1e5, OMP = FALSE)
     
     out2 <- data.frame(row.names = sample.names,
                        out)
@@ -2773,6 +2775,8 @@ run_dada2_pipe <- function(raw_files_path,
                            trim_length = c(240,400),
                            trunclen = c(260,250),
                            truncQ = 0,
+                           trimLeft = c(0,0),
+                           trimRight = c(0,0),
                            maxee = c(3,4),
                            minLen = 100,
                            minover = 15,
@@ -2862,16 +2866,20 @@ run_dada2_pipe <- function(raw_files_path,
   } 
   if(V == "test") {
     
-    PRIMER_F = "GTGYCAGCMGCCGCGGTAA"
-    PRIMER_R = "GGACTACNVGGGTWTCTAAT" 
-    rm_primers = FALSE
-    trim_length = c(200,280)
-    truncQ = Inf
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 40
+    minover = 30
     nbases = 10
+    rm_primers = FALSE
+    pool = TRUE
+    collapseNoMis = TRUE
+    tax_threshold = 80
+    trimLeft = c(0,5)
+
   } 
   if(V == "V4-Addition-PRO") {
     
@@ -2980,6 +2988,8 @@ run_dada2_pipe <- function(raw_files_path,
                                        minLen = minLen,
                                        maxee = maxee,
                                        maxLen = Inf,
+                                       trimLeft = trimLeft,
+                                       trimRight = trimRight,
                                        nbases = nbases, 
                                        minover = minover,
                                        priors = priors,
