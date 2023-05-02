@@ -2875,8 +2875,8 @@ run_dada2_pipe <- function(raw_files_path,
     minover = 25
     nbases = 10
     rm_primers = FALSE
-    pool = TRUE
-    collapseNoMis = TRUE
+    pool = FALSE
+    collapseNoMis = FALSE
     tax_threshold = 80
     trimLeft = c(0,10)
 
