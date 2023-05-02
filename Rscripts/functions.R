@@ -518,7 +518,7 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     # If memory is an issue, execute in a clean environment and reduce the chunk size n and/or the number of threads.
     # now OMP = TRUE and multi = FALSE
     
-    out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=trunclen, trimLeft = 0, trimRight = 0,
+    out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=trunclen,
                          maxEE=maxee, maxLen = maxLen,  rm.phix=TRUE, maxN=0, minLen=minLen, verbose = T,
                          compress=TRUE, multithread= nthreads, truncQ = truncQ,trimLeft = trimLeft, trimRight = trimRight,  n = 1e5, OMP = FALSE)
     
@@ -2864,7 +2864,7 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     
   } 
-  if(V == "test") {
+  if(V == "V4-1PCR-up-trimLeft") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
@@ -2878,7 +2878,7 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     collapseNoMis = TRUE
     tax_threshold = 80
-    trimLeft = c(0,5)
+    trimLeft = c(0,10)
 
   } 
   if(V == "V4-Addition-PRO") {
