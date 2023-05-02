@@ -2872,7 +2872,7 @@ run_dada2_pipe <- function(raw_files_path,
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 30
+    minover = 25
     nbases = 10
     rm_primers = FALSE
     pool = TRUE
