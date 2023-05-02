@@ -2864,7 +2864,7 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     
   } 
-  if(V == "V4-1PCR-up-trimLeft") {
+  if(V == "V4-1PCR-up-trimLeft-test") {
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
@@ -2880,6 +2880,23 @@ run_dada2_pipe <- function(raw_files_path,
     tax_threshold = 80
     trimLeft = c(0,10)
 
+  } 
+  if(V == "V4-1PCR-up-trimLeft") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 25
+    nbases = 100000000000
+    rm_primers = FALSE
+    pool = TRUE
+    collapseNoMis = TRUE
+    tax_threshold = 80
+    trimLeft = c(0,10)
+    
   } 
   if(V == "V4-Addition-PRO") {
     
