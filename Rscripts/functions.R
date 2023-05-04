@@ -1515,8 +1515,8 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
                                   rearrangement = 'stochastic',
                                   control = pml.control(trace = 0))
     
-    detach('package:phangorn', unload = TRUE)
-    detach('package:DECIPHER', unload = TRUE)
+    # detach('package:phangorn', unload = TRUE)
+    # detach('package:DECIPHER', unload = TRUE)
     
   }
   ## ------------------------------------------------------------------------
