@@ -3453,7 +3453,7 @@ phyloseq_check <- function (physeq, null_model = "independentswap", verbose = F,
 #' @examples
 #' 
 
-phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
+phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6, old_deciph = FALSE){
   
   ## ------------------------------------------------------------------------
   require(phyloseq); require(tidyverse)
@@ -3582,7 +3582,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
     ## ------------------------------------------------------------------------
     
     out %>%
-      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
+      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads, old_deciph = old_deciph) -> cluster_out
     
     ## ------------------------------------------------------------------------
     
