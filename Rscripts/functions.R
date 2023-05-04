@@ -2846,6 +2846,8 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     collapseNoMis = TRUE
     tax_threshold = 80
+    trimLeft = c(0,10)
+    
     
   } 
   if(V == "V4-NIH") {
