@@ -1511,7 +1511,6 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     ## negative edges length changed to 0!
     fitGTR <- update(fit, k = 4, inv = 0.2)
     
-    detach('package:DECIPHER', unload = TRUE)
     
     
     fitGTR <- phangorn::optim.pml(fitGTR, model = 'GTR', optInv = TRUE, optGamma = TRUE,
@@ -1519,6 +1518,7 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
                                   control = pml.control(trace = 0))
     
     detach('package:phangorn', unload = TRUE)
+    detach('package:DECIPHER', unload = TRUE)
     
   }
   ## ------------------------------------------------------------------------
