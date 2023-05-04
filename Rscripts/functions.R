@@ -1511,8 +1511,6 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
     ## negative edges length changed to 0!
     fitGTR <- update(fit, k = 4, inv = 0.2)
     
-    
-    
     fitGTR <- phangorn::optim.pml(fitGTR, model = 'GTR', optInv = TRUE, optGamma = TRUE,
                                   rearrangement = 'stochastic',
                                   control = pml.control(trace = 0))
@@ -1533,7 +1531,7 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
   
   ## ------------------------------------------------------------------------
   # physeq@phy_tree <- 
-  require(phyloseq)
+  
   physeq <- merge_phyloseq(physeq,
                            phangorn::midpoint(fitGTR$tree) %>% phyloseq::phy_tree())
   
