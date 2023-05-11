@@ -2840,7 +2840,7 @@ run_dada2_pipe <- function(raw_files_path,
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 40
+    minover = 25
     nbases = 100000000000
     rm_primers = FALSE
     pool = TRUE
@@ -2858,7 +2858,7 @@ run_dada2_pipe <- function(raw_files_path,
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 20
+    minover = 25
     nbases = 100000000000
     rm_primers = FALSE
     pool = TRUE
