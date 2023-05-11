@@ -2854,11 +2854,11 @@ run_dada2_pipe <- function(raw_files_path,
     
     PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
     PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
-    trim_length = c(220,280)
+    # trim_length = c(220,280)
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 40
+    minover = 20
     nbases = 100000000000
     rm_primers = FALSE
     pool = TRUE
