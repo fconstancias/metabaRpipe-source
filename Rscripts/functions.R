@@ -433,6 +433,8 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
                                                  pool = "pseudo",
                                                  priors = "FALSE",
                                                  minover = 12,
+                                                 trimLeft = c(0,0),
+                                                 trimRight = c(0,0),
                                                  cut_dir = "dada2/00_atropos_primer_removed",
                                                  filt_dir = "dada2/02_dada2_filtered_denoised_merged",
                                                  cut_file_pattern = c("_primersout_R1_.fastq.gz","_primersout_R2_.fastq.gz"),
@@ -516,9 +518,9 @@ run_dada2_filter_denoise_merge_reads <- function(trunclen,
     # If memory is an issue, execute in a clean environment and reduce the chunk size n and/or the number of threads.
     # now OMP = TRUE and multi = FALSE
     
-    out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=trunclen, trimLeft = 0, trimRight = 0,
+    out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=trunclen,
                          maxEE=maxee, maxLen = maxLen,  rm.phix=TRUE, maxN=0, minLen=minLen, verbose = T,
-                         compress=TRUE, multithread= nthreads, truncQ = truncQ, n = 1e5, OMP = FALSE)
+                         compress=TRUE, multithread= nthreads, truncQ = truncQ,trimLeft = trimLeft, trimRight = trimRight,  n = 1e5, OMP = FALSE)
     
     out2 <- data.frame(row.names = sample.names,
                        out)
@@ -1513,8 +1515,8 @@ add_phylogeny_to_phyloseq <- function(phyloseq_path,
                                   rearrangement = 'stochastic',
                                   control = pml.control(trace = 0))
     
-    detach('package:phangorn', unload = TRUE)
-    detach('package:DECIPHER', unload = TRUE)
+    # detach('package:phangorn', unload = TRUE)
+    # detach('package:DECIPHER', unload = TRUE)
     
   }
   ## ------------------------------------------------------------------------
@@ -2773,6 +2775,8 @@ run_dada2_pipe <- function(raw_files_path,
                            trim_length = c(240,400),
                            trunclen = c(260,250),
                            truncQ = 0,
+                           trimLeft = c(0,0),
+                           trimRight = c(0,0),
                            maxee = c(3,4),
                            minLen = 100,
                            minover = 15,
@@ -2842,6 +2846,8 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     collapseNoMis = TRUE
     tax_threshold = 80
+    trimLeft = c(0,10)
+    
     
   } 
   if(V == "V4-1PCR--up") {
@@ -2876,18 +2882,39 @@ run_dada2_pipe <- function(raw_files_path,
     pool = TRUE
     
   } 
-  if(V == "test") {
+  if(V == "V4-1PCR-up-trimLeft-test") {
     
-    PRIMER_F = "GTGYCAGCMGCCGCGGTAA"
-    PRIMER_R = "GGACTACNVGGGTWTCTAAT" 
-    rm_primers = FALSE
-    trim_length = c(200,280)
-    truncQ = Inf
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
     trunclen =  c(170,160)
     maxee = c(3,4)
     minLen = 120
-    minover = 40
+    minover = 25
     nbases = 10
+    rm_primers = FALSE
+    pool = FALSE
+    collapseNoMis = FALSE
+    tax_threshold = 80
+    trimLeft = c(0,10)
+
+  } 
+  if(V == "V4-1PCR-up-trimLeft") {
+    
+    PRIMER_F = "GTGCCAGCMGCCGCGGTAA"
+    PRIMER_R = "GGACTACHVGGGTWTCTAAT" 
+    trim_length = c(220,280)
+    trunclen =  c(170,160)
+    maxee = c(3,4)
+    minLen = 120
+    minover = 25
+    nbases = 100000000000
+    rm_primers = FALSE
+    pool = TRUE
+    collapseNoMis = TRUE
+    tax_threshold = 80
+    trimLeft = c(0,10)
+    
   } 
   if(V == "V4-Addition-PRO") {
     
@@ -2996,6 +3023,8 @@ run_dada2_pipe <- function(raw_files_path,
                                        minLen = minLen,
                                        maxee = maxee,
                                        maxLen = Inf,
+                                       trimLeft = trimLeft,
+                                       trimRight = trimRight,
                                        nbases = nbases, 
                                        minover = minover,
                                        priors = priors,
@@ -3440,7 +3469,7 @@ phyloseq_check <- function (physeq, null_model = "independentswap", verbose = F,
 #' @examples
 #' 
 
-phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6){
+phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_seq = TRUE, nthreads = 6, old_deciph = FALSE){
   
   ## ------------------------------------------------------------------------
   require(phyloseq); require(tidyverse)
@@ -3569,7 +3598,7 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
     ## ------------------------------------------------------------------------
     
     out %>%
-      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads) -> cluster_out
+      phyloseq_DECIPHER_cluster_ASV(., threshold = 100, nthreads = nthreads, old_deciph = old_deciph) -> cluster_out
     
     ## ------------------------------------------------------------------------
     
