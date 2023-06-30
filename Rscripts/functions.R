@@ -2722,16 +2722,26 @@ phloseq_export_otu_tax <- function(physeq = NULL){
   
   dss2df <- function(dss) data.frame(width=BiocGenerics::width(dss), seq=as.character(dss), names=names(dss))
   
-  dss2df(physeq@refseq) %>%
-    rownames_to_column('ASV') %>%
-    dplyr::select(-names) %>%
-    dplyr::rename(ASV_length = width,
-                  ASV_sequence = seq)-> refseq_df
-  
-  otu_table %>%
-    left_join(refseq_df, by = 'ASV') %>%
-    left_join(tax_table, by = c("ASV" = "ASV")) %>%
-    dplyr::select(ASV, everything()) -> merged_table
+  if(!is.null(physeq@phy_tree))
+  {
+    dss2df(physeq@refseq) %>%
+      rownames_to_column('ASV') %>%
+      dplyr::select(-names) %>%
+      dplyr::rename(ASV_length = width,
+                    ASV_sequence = seq)-> refseq_df
+    
+    otu_table %>%
+      left_join(refseq_df, by = 'ASV') %>%
+      left_join(tax_table, by = c("ASV" = "ASV")) %>%
+      dplyr::select(ASV, everything()) -> merged_table
+  } else {
+    otu_table %>%
+      # left_join(refseq_df, by = 'ASV') %>%
+      left_join(tax_table, by = c("ASV" = "ASV")) %>%
+      dplyr::select(ASV, everything()) -> merged_table
+    
+  }
+
   
   return(merged_table)
 }
