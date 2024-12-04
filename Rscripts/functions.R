@@ -2741,7 +2741,7 @@ phloseq_export_otu_tax <- function(physeq = NULL){
       dplyr::select(ASV, everything()) -> merged_table
     
   }
-
+  
   
   return(merged_table)
 }
@@ -2907,7 +2907,7 @@ run_dada2_pipe <- function(raw_files_path,
     collapseNoMis = FALSE
     tax_threshold = 80
     trimLeft = c(0,10)
-
+    
   } 
   if(V == "V4-1PCR-up-trimLeft") {
     
@@ -3669,16 +3669,25 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
 phyloseq_visualize_ASV_alignment <- function(phyloseq = NULL,
                                              nthreads = 2,
                                              openURL = TRUE,
+                                             AlignTranslation = FALSE,
                                              htmlFile = paste(tempdir(), "/myXStringSet.html", sep = ""))
 {
   #######------------------
   require(tidyverse); require(phyloseq); require(DECIPHER)
   #######------------------
-  
+  if (!isTRUE(AlignTranslation))
+  {
   phyloseq@refseq %>% 
     DECIPHER::AlignSeqs(myXStringSet = .,
                         processors = nthreads,
                         verbose = FALSE) -> ASV_al
+  }
+  if (AlignTranslation)
+  {
+    phyloseq@refseq %>%  
+      DECIPHER::AlignTranslation(type = "AAStringSet")  -> ASV_al
+  }
+  
   
   
   #######------------------aligned %>% 
