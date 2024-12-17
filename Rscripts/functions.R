@@ -2722,7 +2722,7 @@ phloseq_export_otu_tax <- function(physeq = NULL){
   
   dss2df <- function(dss) data.frame(width=BiocGenerics::width(dss), seq=as.character(dss), names=names(dss))
   
-  if(!is.null(physeq@phy_tree))
+  if(!is.null(physeq@refseq))
   {
     dss2df(physeq@refseq) %>%
       rownames_to_column('ASV') %>%
@@ -3547,15 +3547,17 @@ phyloseq_combine_objects <- function(ps1, ps2, merge_metada = FALSE, clust_ASV_s
            starts_with("Order"),
            starts_with("Family"),
            starts_with("Genus"),
-           starts_with("Species")) %>%
+           starts_with("Species"),
+           starts_with("Strain")) %>%
     mutate(Kingdom_merged = ifelse(is.na(Kingdom.x), Kingdom.y , Kingdom.x),
            Phylum_merged = ifelse(is.na(Phylum.x), Phylum.y , Phylum.x),
            Class_merged= ifelse(is.na(Class.x), Class.y , Class.x),
            Order_merged = ifelse(is.na(Order.x), Order.y , Order.x),
            Family_merged = ifelse(is.na(Family.x), Family.y , Family.x),
            Genus_merged = ifelse(is.na(Genus.x), Genus.y , Genus.x),
-           Species_merged = ifelse(is.na(Species.x), Species.y , Species.x)) %>%
-    select(ASV_sequence, Kingdom_merged:Species_merged) -> tax_merged
+           Species_merged = ifelse(is.na(Species.x), Species.y , Species.x),
+           Strain_merged = ifelse(is.na(Strain.x), Strain.y , Strain.x)) %>%
+    select(ASV_sequence, Kingdom_merged:Strain_merged) -> tax_merged
   
   ## ------------------------------------------------------------------------
   
